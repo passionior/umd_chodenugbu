@@ -20,9 +20,10 @@
   header h1{margin:0;font-size:21px;font-weight:800;display:flex;align-items:center;gap:8px}
   header .sub{font-size:13px;opacity:.9;margin-top:3px}
   .tabs{display:flex;gap:4px;background:var(--card);padding:7px;margin:0;position:sticky;top:62px;z-index:15;
-    border-bottom:1px solid var(--line);overflow-x:auto}
-  .tab{flex:1;min-width:80px;border:none;background:transparent;color:var(--muted);padding:12px 8px;
-    font-size:15.5px;font-weight:700;border-radius:10px;cursor:pointer;white-space:nowrap;min-height:48px}
+    border-bottom:1px solid var(--line)}
+  .tab{flex:1 1 0;min-width:0;border:none;background:transparent;color:var(--muted);padding:12px 6px;
+    font-size:15.5px;font-weight:700;border-radius:10px;cursor:pointer;white-space:nowrap;min-height:48px;
+    overflow:hidden;text-overflow:ellipsis;text-align:center}
   .tab.active{background:var(--accent-l);color:var(--accent-d)}
   main{max-width:1100px;margin:0 auto;padding:14px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
@@ -81,6 +82,11 @@
     text-decoration:none;padding:9px 15px;border-radius:22px;font-weight:700;font-size:15.5px;min-height:44px}
   .callbtn:active{background:var(--accent-d)}
   .nocontact{color:#b8b2a6;font-size:15px}
+  .clschips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .clschip{display:inline-flex;align-items:center;gap:6px;background:var(--accent-l);color:var(--accent-d);
+    border-radius:20px;padding:8px 14px;font-size:15px;font-weight:600}
+  .clschip b{font-weight:800}
+  .clschip.warn{background:#fbe9e7;color:var(--danger)}
   .memo{width:100%;margin-top:10px;min-height:46px;resize:vertical;font-family:inherit;font-size:16px;
     padding:11px 12px;border:1px solid var(--line);border-radius:10px}
   .memo::placeholder{color:#b8b2a6}
@@ -137,6 +143,13 @@
     .tal{margin-left:0}
     .stu .top{flex-wrap:wrap}
   }
+  @media(max-width:400px){
+    .tabs{gap:2px;padding:6px 5px}
+    .tab{font-size:14px;padding:11px 3px}
+  }
+  @media(max-width:340px){
+    .tab{font-size:13px}
+  }
 </style>
 </head>
 <body>
@@ -150,8 +163,8 @@
 
 <div class="tabs">
   <button class="tab active" data-tab="check">✅ 출석부</button>
-  <button class="tab" data-tab="report">📊 통계·리포트</button>
-  <button class="tab" data-tab="students">👥 학생 관리</button>
+  <button class="tab" data-tab="report">📊 통계</button>
+  <button class="tab" data-tab="students">👥 학생</button>
   <button class="tab" data-tab="settings">⚙️ 설정</button>
 </div>
 
@@ -297,6 +310,10 @@
     <div class="fldg">
       <label class="fld">반 이름</label>
       <input id="className" placeholder="예) 1학년, 사랑반" style="width:100%">
+    </div>
+    <div class="fldg">
+      <label class="fld">현재 만들어진 반</label>
+      <div class="clschips" id="existingClasses"></div>
     </div>
     <div class="row between" style="margin-top:8px">
       <button class="btn grey sm" id="classCancel">취소</button>
@@ -531,12 +548,28 @@ document.getElementById("toggleAll").onclick=()=>{
 };
 
 /* ---------- 학생 관리 ---------- */
+/* 반 현황 요약 (항상 표시) */
+function classSummaryCard(){
+  const card=document.createElement("div");
+  card.className="card";
+  const counts=state.classes.map(c=>({c, n:state.students.filter(s=>s.className===c).length}));
+  const orphan=state.students.filter(s=>!state.classes.includes(s.className)).length;
+  let chips=counts.map(x=>`<span class="clschip">${esc(x.c)} <b>${x.n}명</b></span>`).join("");
+  if(orphan) chips+=`<span class="clschip warn">미분류 <b>${orphan}명</b></span>`;
+  if(!state.classes.length && !orphan) chips=`<span class="nocontact">아직 만든 반이 없습니다. ‘+ 반 추가’로 시작하세요.</span>`;
+  card.innerHTML=`<div class="classhdr" style="margin-top:0">📋 반 현황
+      <span class="tag" style="margin-left:auto">${state.classes.length}개 반 · 학생 ${state.students.length}명</span></div>
+    <div class="clschips">${chips}</div>`;
+  return card;
+}
 function renderStudents(){
   const box=document.getElementById("stuManage");
   box.innerHTML="";
-  if(state.students.length===0){
-    box.innerHTML=`<div class="card empty"><div class="big">＋</div>학생을 추가해 시작하세요.</div>`;
-    return;
+  box.appendChild(classSummaryCard());
+  if(state.students.length===0 && state.classes.length===0){
+    const e=document.createElement("div"); e.className="card empty";
+    e.innerHTML=`<div class="big">＋</div>‘+ 반 추가’로 반을 만들고 ‘+ 학생 추가’로 학생을 등록하세요.`;
+    box.appendChild(e);
   }
   groupByClass().forEach(({cls, students})=>{
     if(students.length===0 && !state.classes.includes(cls)) return;
@@ -544,7 +577,7 @@ function renderStudents(){
     card.className="card";
     const canDel = state.classes.includes(cls);
     card.innerHTML=`<div class="classhdr" style="margin-top:0">${esc(cls)} <span class="tag">${students.length}명</span>
-      ${canDel?`<button class="btn grey sm" style="margin-left:auto" data-delcls="${esc(cls)}">반 삭제</button>`:""}</div>`;
+      ${canDel?`<button class="btn grey sm" style="margin-left:auto" data-delcls="${esc(cls)}">반 삭제</button>`:""}</div>${students.length?"":'<div class="hint" style="padding:4px 4px 0">아직 등록된 학생이 없습니다.</div>'}`;
     students.forEach(stu=>{
       const r=document.createElement("div");
       r.className="stu";
@@ -632,7 +665,12 @@ document.getElementById("stuName").addEventListener("keydown",e=>{ if(e.key==="E
 /* 반 추가 모달 */
 const classModal=document.getElementById("classModal");
 document.getElementById("addClassBtn").onclick=()=>{
-  document.getElementById("className").value=""; classModal.classList.add("show");
+  document.getElementById("className").value="";
+  const ex=document.getElementById("existingClasses");
+  ex.innerHTML = state.classes.length
+    ? state.classes.map(c=>`<span class="clschip">${esc(c)} <b>${state.students.filter(s=>s.className===c).length}명</b></span>`).join("")
+    : `<span class="nocontact">아직 없음</span>`;
+  classModal.classList.add("show");
   document.getElementById("className").focus();
 };
 document.getElementById("classCancel").onclick=()=>classModal.classList.remove("show");
