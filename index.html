@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>우면동교회 초등부</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --bg:#f4f1ea; --card:#ffffff; --ink:#33302b; --muted:#8a8378;
+    --line:#e5e0d5; --accent:#5b7c5a; --accent-d:#456245; --accent-l:#eaf1e9;
+    --gold:#c99a3c; --gold-l:#faf3e2; --danger:#c0574e; --blue:#4a6b8a;
+    --shadow:0 1px 3px rgba(0,0,0,.06),0 6px 18px rgba(0,0,0,.05);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',system-ui,sans-serif;
+    background:var(--bg);color:var(--ink);font-size:17px;line-height:1.55;-webkit-text-size-adjust:100%}
+  header{background:var(--accent);color:#fff;padding:16px 16px;position:sticky;top:0;z-index:20;
+    box-shadow:0 2px 8px rgba(0,0,0,.12)}
+  header h1{margin:0;font-size:21px;font-weight:800;display:flex;align-items:center;gap:8px}
+  header .sub{font-size:13px;opacity:.9;margin-top:3px}
+  .tabs{display:flex;gap:4px;background:var(--card);padding:7px;margin:0;position:sticky;top:62px;z-index:15;
+    border-bottom:1px solid var(--line);overflow-x:auto}
+  .tab{flex:1;min-width:80px;border:none;background:transparent;color:var(--muted);padding:12px 8px;
+    font-size:15.5px;font-weight:700;border-radius:10px;cursor:pointer;white-space:nowrap;min-height:48px}
+  .tab.active{background:var(--accent-l);color:var(--accent-d)}
+  main{max-width:1100px;margin:0 auto;padding:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
+    padding:14px;margin-bottom:14px}
+  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .between{justify-content:space-between}
+  button{font-family:inherit}
+  .btn{border:none;background:var(--accent);color:#fff;padding:12px 18px;border-radius:10px;font-weight:700;
+    font-size:15.5px;cursor:pointer;min-height:46px}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:var(--accent-l);color:var(--accent-d)}
+  .btn.gold{background:var(--gold)}
+  .btn.sm{padding:9px 13px;font-size:14.5px;min-height:42px}
+  .btn.danger{background:var(--danger)}
+  .btn.grey{background:#e7e3da;color:#555}
+  input,select{font-family:inherit;font-size:16.5px;padding:12px 13px;border:1px solid var(--line);
+    border-radius:10px;background:#fff;color:var(--ink);min-height:48px}
+  input:focus,select:focus{outline:2px solid var(--accent-l);border-color:var(--accent)}
+  label.fld{font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:4px}
+  .weekbar{display:flex;align-items:center;justify-content:center;gap:10px}
+  .weekbar .wk{font-weight:700;font-size:16px;text-align:center;min-width:180px}
+  .weekbar .wk small{display:block;font-size:12px;color:var(--muted);font-weight:500}
+  .navbtn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:#fff;
+    font-size:18px;cursor:pointer;color:var(--accent-d)}
+  .classhdr{font-weight:700;color:var(--accent-d);margin:16px 0 8px;font-size:15px;
+    display:flex;align-items:center;gap:8px}
+  .classhdr::before{content:"";width:5px;height:18px;background:var(--accent);border-radius:3px}
+  .classhdr.toggle{cursor:pointer;user-select:none;padding:6px 4px;border-radius:8px}
+  .classhdr.toggle:active{background:var(--accent-l)}
+  .classhdr .caret{color:var(--accent);font-size:16px;width:16px;text-align:center}
+  .classhdr .clstal{margin-left:auto;background:var(--gold-l);color:var(--gold);font-weight:800;
+    font-size:13.5px;padding:4px 11px;border-radius:20px;white-space:nowrap}
+  .stu{border:1px solid var(--line);border-radius:12px;padding:11px 12px;margin-bottom:10px;background:#fff}
+  .stu .top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+  .stu .nm{font-weight:800;font-size:18.5px}
+  .chips{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+  .chip{border:2px solid var(--line);background:#fff;color:var(--muted);border-radius:24px;
+    padding:11px 17px;font-size:15.5px;font-weight:700;cursor:pointer;user-select:none;min-height:46px;
+    display:inline-flex;align-items:center}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .chip.on::before{content:"✓ "}
+  .chip.gold.on{background:var(--gold);border-color:var(--gold)}
+  .qtbox{display:flex;align-items:center;gap:8px;border:2px solid var(--line);border-radius:24px;
+    padding:5px 8px;font-size:15.5px;font-weight:700;color:var(--muted);min-height:46px}
+  .qtbox.on{border-color:var(--blue);color:var(--blue);background:#eef3f8}
+  .qtbox button{width:36px;height:36px;border-radius:50%;border:none;background:#e7e3da;font-size:22px;
+    cursor:pointer;font-weight:700;color:#444;line-height:1}
+  .qtbox .qv{min-width:56px;text-align:center}
+  .tal{margin-left:auto;background:var(--gold-l);color:var(--gold);font-weight:800;font-size:15.5px;
+    padding:8px 14px;border-radius:24px;white-space:nowrap}
+  .contact-lines{margin-top:4px}
+  .cline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 0;font-size:16px}
+  .ctag{background:var(--accent-l);color:var(--accent-d);border-radius:6px;padding:3px 9px;
+    font-size:13.5px;font-weight:700;min-width:56px;text-align:center}
+  .callbtn{display:inline-flex;align-items:center;gap:5px;background:var(--accent);color:#fff;
+    text-decoration:none;padding:9px 15px;border-radius:22px;font-weight:700;font-size:15.5px;min-height:44px}
+  .callbtn:active{background:var(--accent-d)}
+  .nocontact{color:#b8b2a6;font-size:15px}
+  .memo{width:100%;margin-top:10px;min-height:46px;resize:vertical;font-family:inherit;font-size:16px;
+    padding:11px 12px;border:1px solid var(--line);border-radius:10px}
+  .memo::placeholder{color:#b8b2a6}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:9px 8px;text-align:center;border-bottom:1px solid var(--line)}
+  th{background:var(--accent-l);color:var(--accent-d);font-weight:700;position:sticky;top:0}
+  td.name,th.name{text-align:left;font-weight:600}
+  tr:last-child td{border-bottom:none}
+  .stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:14px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center;
+    box-shadow:var(--shadow)}
+  .stat .v{font-size:26px;font-weight:800;color:var(--accent-d)}
+  .stat .v.gold{color:var(--gold)}
+  .stat .l{font-size:12.5px;color:var(--muted);margin-top:3px;font-weight:600}
+  .tblwrap{overflow-x:auto;border-radius:12px;border:1px solid var(--line)}
+  .seg{display:inline-flex;background:#ece7dd;border-radius:10px;padding:3px}
+  .segbtn{border:none;background:transparent;color:var(--muted);font-weight:700;font-size:14.5px;
+    padding:9px 16px;border-radius:8px;cursor:pointer;min-height:42px}
+  .segbtn.active{background:#fff;color:var(--accent-d);box-shadow:0 1px 2px rgba(0,0,0,.1)}
+  tr.totrow td{background:var(--accent-l);font-weight:800;color:var(--accent-d);border-top:2px solid var(--accent)}
+  td.tgold{font-weight:800;color:var(--gold)}
+  th.name,td.name{white-space:nowrap}
+  .empty{text-align:center;color:var(--muted);padding:30px 10px}
+  .empty .big{font-size:34px;margin-bottom:6px}
+  .set-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;
+    border-bottom:1px solid var(--line)}
+  .set-item:last-child{border-bottom:none}
+  .set-item .lbl{font-weight:600}
+  .set-item .lbl small{display:block;color:var(--muted);font-weight:500;font-size:12px}
+  .set-item input{width:80px;text-align:center}
+  .tag{display:inline-block;background:var(--accent-l);color:var(--accent-d);border-radius:6px;
+    padding:2px 8px;font-size:12px;font-weight:600;margin-left:6px}
+  .del-x{border:none;background:transparent;color:var(--danger);font-size:20px;cursor:pointer;
+    padding:0 4px;line-height:1}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;
+    justify-content:center;z-index:50;padding:16px}
+  .modal-bg.show{display:flex}
+  .modal{background:#fff;border-radius:16px;padding:20px;width:100%;max-width:380px;box-shadow:var(--shadow)}
+  .modal h3{margin:0 0 14px}
+  .modal .fldg{margin-bottom:12px}
+  .hint{font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.5}
+  .legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;color:var(--muted);margin-top:10px}
+  .legend span{display:flex;align-items:center;gap:4px}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .sync-status{border-radius:10px;padding:10px 13px;font-size:14.5px;font-weight:700}
+  .sync-status.off{background:#f0ede6;color:#8a8378}
+  .sync-status.ok{background:var(--accent-l);color:var(--accent-d)}
+  .sync-status.busy{background:var(--gold-l);color:var(--gold)}
+  .sync-status.err{background:#fbe9e7;color:var(--danger)}
+  .syncpill{font-size:12px;background:rgba(255,255,255,.22);color:#fff;padding:3px 10px;border-radius:20px;
+    font-weight:700;white-space:nowrap}
+  .syncpill.hide{display:none}
+  @media(max-width:560px){
+    .tal{margin-left:0}
+    .stu .top{flex-wrap:wrap}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="row between">
+    <h1>⛪ 우면동교회 초등부</h1>
+    <span class="syncpill hide" id="syncPill">동기화</span>
+  </div>
+  <div class="sub">출석 · QT · 성경암송 · 가정예배 · 성경필사 · 달란트</div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" data-tab="check">✅ 출석부</button>
+  <button class="tab" data-tab="report">📊 통계·리포트</button>
+  <button class="tab" data-tab="students">👥 학생 관리</button>
+  <button class="tab" data-tab="settings">⚙️ 설정</button>
+</div>
+
+<main>
+  <!-- 주간 체크 -->
+  <section id="tab-check">
+    <div class="card">
+      <div class="weekbar">
+        <button class="navbtn" id="prevWk">‹</button>
+        <div class="wk" id="wkLabel">—<small></small></div>
+        <button class="navbtn" id="nextWk">›</button>
+      </div>
+      <div class="row between" style="margin-top:12px">
+        <div class="row" style="gap:8px">
+          <button class="btn ghost sm" id="thisWk">오늘 주간으로</button>
+          <button class="btn grey sm" id="toggleAll">전체 접기</button>
+        </div>
+        <div class="tag" id="wkTotal">주간 달란트 0</div>
+      </div>
+      <div class="legend">
+        <span><i class="dot" style="background:var(--accent)"></i>출석</span>
+        <span><i class="dot" style="background:var(--blue)"></i>QT(7일중)</span>
+        <span><i class="dot" style="background:var(--gold)"></i>성경암송</span>
+        <span><i class="dot" style="background:var(--accent)"></i>가정예배</span>
+        <span><i class="dot" style="background:var(--accent)"></i>성경필사</span>
+      </div>
+    </div>
+    <div id="checkList"></div>
+  </section>
+
+  <!-- 통계 -->
+  <section id="tab-report" style="display:none">
+    <div class="card">
+      <label class="fld">집계 범위</label>
+      <select id="repRange" style="width:100%">
+        <option value="all">전체 기간</option>
+        <option value="month">최근 4주</option>
+        <option value="week">이번 주간</option>
+        <option value="custom">직접 설정 (기간 선택)</option>
+      </select>
+      <div id="customRange" class="row" style="display:none;margin-top:10px;gap:8px;align-items:center">
+        <input type="date" id="repStart" style="flex:1;min-width:120px">
+        <span style="color:var(--muted);font-weight:700">~</span>
+        <input type="date" id="repEnd" style="flex:1;min-width:120px">
+      </div>
+      <div class="row between" style="margin-top:12px">
+        <div class="seg">
+          <button class="segbtn active" data-view="class">반별 보기</button>
+          <button class="segbtn" data-view="all">전체 보기</button>
+        </div>
+        <button class="btn gold sm" id="exportBtn">⬇ 엑셀</button>
+      </div>
+      <div class="hint" id="repRangeInfo" style="margin-top:8px"></div>
+    </div>
+    <div class="stat-cards" id="statCards"></div>
+    <div id="repBody"></div>
+  </section>
+
+  <!-- 학생 관리 -->
+  <section id="tab-students" style="display:none">
+    <div class="card">
+      <div class="row between">
+        <strong>학생 명단</strong>
+        <div class="row">
+          <button class="btn ghost sm" id="addClassBtn">+ 반 추가</button>
+          <button class="btn sm" id="addStuBtn">+ 학생 추가</button>
+        </div>
+      </div>
+    </div>
+    <div id="stuManage"></div>
+  </section>
+
+  <!-- 설정 -->
+  <section id="tab-settings" style="display:none">
+    <div class="card">
+      <div class="classhdr" style="margin-top:0">🔗 구글시트 연동 (선생님 공유)</div>
+      <div id="syncStatusBox" class="sync-status off">연동 안 됨 — 이 기기에만 저장됩니다</div>
+      <label class="fld" style="margin-top:12px">연동 주소 (Apps Script 웹앱 URL)</label>
+      <input id="syncUrl" type="url" inputmode="url" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%">
+      <div class="row" style="margin-top:10px;gap:8px">
+        <button class="btn sm" id="syncConnectBtn">연결</button>
+        <button class="btn ghost sm" id="syncNowBtn">🔄 지금 동기화</button>
+        <button class="btn grey sm" id="syncOffBtn">연동 해제</button>
+      </div>
+      <label class="row" style="margin-top:12px;gap:8px;font-size:15px;font-weight:600;cursor:pointer">
+        <input type="checkbox" id="autoSyncChk" style="width:22px;height:22px;min-height:auto"> 자동 동기화 (15초마다)
+      </label>
+      <div class="hint">모든 선생님이 <b>같은 주소</b>를 입력하면 한 구글시트를 함께 보고 편집합니다. 인터넷이 없을 땐 자동으로 이 기기에 저장했다가 연결되면 반영됩니다.</div>
+    </div>
+    <div class="card">
+      <div class="classhdr" style="margin-top:0">달란트 배점</div>
+      <div id="talentSettings"></div>
+      <div class="hint">각 항목을 완료하면 아래 점수만큼 달란트가 적립됩니다. QT는 하루당 점수 × 실천한 일수로 계산됩니다.</div>
+    </div>
+    <div class="card">
+      <div class="classhdr" style="margin-top:0">데이터 관리</div>
+      <div class="row">
+        <button class="btn ghost sm" id="backupBtn">💾 백업 파일 저장</button>
+        <button class="btn ghost sm" id="restoreBtn">📂 백업 불러오기</button>
+        <button class="btn danger sm" id="resetBtn">전체 초기화</button>
+      </div>
+      <input type="file" id="restoreFile" accept="application/json" style="display:none">
+      <div class="hint">모든 기록은 이 브라우저에 자동 저장됩니다. 다른 기기와 공유하거나 안전하게 보관하려면 백업 파일을 저장하세요.</div>
+    </div>
+  </section>
+</main>
+
+<!-- 학생 추가 모달 -->
+<div class="modal-bg" id="stuModal">
+  <div class="modal">
+    <h3 id="stuModalTitle">학생 추가</h3>
+    <div class="fldg">
+      <label class="fld">이름</label>
+      <input id="stuName" placeholder="예) 김믿음" style="width:100%">
+    </div>
+    <div class="fldg">
+      <label class="fld">반</label>
+      <select id="stuClass" style="width:100%"></select>
+    </div>
+    <div class="fldg">
+      <label class="fld">학생 연락처 <span style="font-weight:400">(선택)</span></label>
+      <input id="stuPhone" type="tel" inputmode="tel" placeholder="010-0000-0000" style="width:100%">
+    </div>
+    <div class="fldg">
+      <label class="fld">학부모 성함 <span style="font-weight:400">(선택)</span></label>
+      <input id="stuParent" placeholder="예) 홍길동" style="width:100%">
+    </div>
+    <div class="fldg">
+      <label class="fld">학부모 연락처 <span style="font-weight:400">(선택)</span></label>
+      <input id="stuParentPhone" type="tel" inputmode="tel" placeholder="010-0000-0000" style="width:100%">
+    </div>
+    <div class="row between" style="margin-top:8px">
+      <button class="btn grey sm" id="stuCancel">취소</button>
+      <button class="btn" id="stuSave">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 반 추가 모달 -->
+<div class="modal-bg" id="classModal">
+  <div class="modal">
+    <h3>반 추가</h3>
+    <div class="fldg">
+      <label class="fld">반 이름</label>
+      <input id="className" placeholder="예) 1학년, 사랑반" style="width:100%">
+    </div>
+    <div class="row between" style="margin-top:8px">
+      <button class="btn grey sm" id="classCancel">취소</button>
+      <button class="btn" id="classSave">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ---------- 데이터 모델 ---------- */
+const STORE_KEY = "cchurch_elem_v1";
+const ITEMS = [
+  {key:"attendance", label:"출석",     type:"bool", color:"accent"},
+  {key:"qt",         label:"QT",       type:"count",color:"blue"},
+  {key:"memorize",   label:"성경암송", type:"bool", color:"gold"},
+  {key:"family",     label:"가정예배", type:"bool", color:"accent"},
+  {key:"transcribe", label:"성경필사", type:"bool", color:"accent"},
+];
+const DEFAULT_TALENTS = {attendance:2, qt:1, memorize:3, family:2, transcribe:2};
+
+function defaultState(){
+  return {
+    classes:["1반","2반"],
+    students:[],
+    records:{},           // records[studentId][weekKey] = {attendance,qt,memorize,family,transcribe,memo,u}
+    talents:{...DEFAULT_TALENTS},
+    seq:1,
+    cfgUpdatedAt:0,       // 명단/반/배점 변경 시각
+    deleted:[]            // 삭제된 학생 id (툼스톤)
+  };
+}
+let state = load();
+let curWeek = sundayOf(new Date());
+let dirty = false;        // 로컬 변경 후 아직 동기화 안 됨
+let collapsed = {};       // 출석부에서 접은 반 (이 기기 기준)
+try{ collapsed = JSON.parse(localStorage.getItem("cchurch_collapsed")||"{}"); }catch(e){ collapsed={}; }
+function saveCollapsed(){ localStorage.setItem("cchurch_collapsed", JSON.stringify(collapsed)); }
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(!raw) return defaultState();
+    const s = JSON.parse(raw);
+    return Object.assign(defaultState(), s);
+  }catch(e){ return defaultState(); }
+}
+function save(){ localStorage.setItem(STORE_KEY, JSON.stringify(state)); dirty=true; scheduleSync(); }
+function saveQuiet(){ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+function bumpCfg(){ state.cfgUpdatedAt = Date.now(); }
+
+/* ---------- 날짜 유틸 ---------- */
+function sundayOf(d){
+  const x = new Date(d); x.setHours(0,0,0,0);
+  x.setDate(x.getDate() - x.getDay()); // 일요일 시작
+  return x;
+}
+function weekKey(d){
+  const x = sundayOf(d);
+  return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0");
+}
+function fmtWeek(d){
+  const s = sundayOf(d), e = new Date(s); e.setDate(e.getDate()+6);
+  const m=(x)=>(x.getMonth()+1), day=(x)=>x.getDate();
+  return `${s.getFullYear()}년 ${m(s)}월 ${day(s)}일`;
+}
+function fmtRange(d){
+  const s = sundayOf(d), e = new Date(s); e.setDate(e.getDate()+6);
+  return `${s.getMonth()+1}/${s.getDate()} ~ ${e.getMonth()+1}/${e.getDate()} (주일 기준)`;
+}
+
+/* ---------- 레코드 접근 ---------- */
+function getRec(sid, wk){
+  if(!state.records[sid]) state.records[sid]={};
+  if(!state.records[sid][wk]) state.records[sid][wk]={attendance:false,qt:0,memorize:false,family:false,transcribe:false,memo:""};
+  return state.records[sid][wk];
+}
+function calcTalent(rec){
+  if(!rec) return 0;
+  let t=0;
+  t += rec.attendance ? state.talents.attendance : 0;
+  t += (rec.qt||0) * state.talents.qt;
+  t += rec.memorize ? state.talents.memorize : 0;
+  t += rec.family ? state.talents.family : 0;
+  t += rec.transcribe ? state.talents.transcribe : 0;
+  return t;
+}
+
+/* ---------- 탭 전환 ---------- */
+document.querySelectorAll(".tab").forEach(t=>{
+  t.onclick=()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+    t.classList.add("active");
+    const id=t.dataset.tab;
+    ["check","report","students","settings"].forEach(k=>{
+      document.getElementById("tab-"+k).style.display = (k===id)?"":"none";
+    });
+    if(id==="report") renderReport();
+    if(id==="students") renderStudents();
+    if(id==="settings") renderSettings();
+  };
+});
+
+/* ---------- 주간 체크 렌더 ---------- */
+function renderCheck(){
+  document.getElementById("wkLabel").innerHTML = fmtWeek(curWeek)+"<small>"+fmtRange(curWeek)+"</small>";
+  const wk = weekKey(curWeek);
+  const list = document.getElementById("checkList");
+  list.innerHTML="";
+  if(state.students.length===0){
+    list.innerHTML=`<div class="card empty"><div class="big">👥</div>등록된 학생이 없습니다.<br>「학생 관리」 탭에서 학생을 추가하세요.</div>`;
+    document.getElementById("wkTotal").textContent="주간 달란트 0";
+    return;
+  }
+  let weekTotal=0;
+  const byClass = groupByClass();
+  byClass.forEach(({cls, students})=>{
+    if(students.length===0) return;
+    const isCol = !!collapsed[cls];
+    const wrap=document.createElement("div");
+    wrap.className="card";
+    wrap.innerHTML=`<div class="classhdr toggle" data-cls="${esc(cls)}" style="margin-top:0">
+        <span class="caret">${isCol?'▸':'▾'}</span>${esc(cls)}
+        <span class="tag">${students.length}명</span>
+        <span class="clstal" data-clstal="${esc(cls)}"></span>
+      </div>
+      <div class="clsbody"${isCol?' style="display:none"':''}></div>`;
+    const body=wrap.querySelector(".clsbody");
+    let clsTotal=0;
+    students.forEach(stu=>{
+      const rec=getRec(stu.id, wk);
+      const tal=calcTalent(rec); weekTotal+=tal; clsTotal+=tal;
+      const el=document.createElement("div");
+      el.className="stu";
+      el.innerHTML=`
+        <div class="top">
+          <span class="nm">${esc(stu.name)}</span>
+          <span class="tal" data-tal="${stu.id}">🪙 ${tal} 달란트</span>
+        </div>
+        <div class="chips">
+          <span class="chip ${rec.attendance?'on':''}" data-k="attendance" data-id="${stu.id}">출석</span>
+          <span class="qtbox ${rec.qt>0?'on':''}" data-id="${stu.id}">
+            <button data-qt="minus" data-id="${stu.id}">−</button>
+            <span class="qv">QT <b data-qtv="${stu.id}">${rec.qt}</b>/7</span>
+            <button data-qt="plus" data-id="${stu.id}">+</button>
+          </span>
+          <span class="chip gold ${rec.memorize?'on':''}" data-k="memorize" data-id="${stu.id}">성경암송</span>
+          <span class="chip ${rec.family?'on':''}" data-k="family" data-id="${stu.id}">가정예배</span>
+          <span class="chip ${rec.transcribe?'on':''}" data-k="transcribe" data-id="${stu.id}">성경필사</span>
+        </div>
+        <textarea class="memo" placeholder="메모 / 기도제목" data-memo="${stu.id}">${esc(rec.memo||"")}</textarea>
+      `;
+      body.appendChild(el);
+    });
+    wrap.querySelector(".clstal").textContent="🪙 "+clsTotal;
+    wrap.querySelector(".classhdr.toggle").onclick=()=>{
+      collapsed[cls]=!collapsed[cls]; saveCollapsed(); renderCheck();
+    };
+    list.appendChild(wrap);
+  });
+  document.getElementById("wkTotal").textContent="주간 달란트 "+weekTotal;
+  const openCls=byClass.filter(g=>g.students.length).map(g=>g.cls);
+  const tb=document.getElementById("toggleAll");
+  if(tb) tb.textContent = (openCls.length && openCls.some(c=>!collapsed[c])) ? "전체 접기" : "전체 펼치기";
+  bindCheckEvents();
+}
+
+function bindCheckEvents(){
+  const wk = weekKey(curWeek);
+  document.querySelectorAll(".chip[data-k]").forEach(c=>{
+    c.onclick=()=>{
+      const rec=getRec(c.dataset.id, wk);
+      rec[c.dataset.k]=!rec[c.dataset.k]; rec.u=Date.now();
+      c.classList.toggle("on");
+      save(); updateTal(c.dataset.id);
+    };
+  });
+  document.querySelectorAll("[data-qt]").forEach(b=>{
+    b.onclick=()=>{
+      const rec=getRec(b.dataset.id, wk);
+      if(b.dataset.qt==="plus" && rec.qt<7) rec.qt++;
+      if(b.dataset.qt==="minus" && rec.qt>0) rec.qt--;
+      rec.u=Date.now();
+      document.querySelector(`[data-qtv="${b.dataset.id}"]`).textContent=rec.qt;
+      b.closest(".qtbox").classList.toggle("on", rec.qt>0);
+      save(); updateTal(b.dataset.id);
+    };
+  });
+  document.querySelectorAll("[data-memo]").forEach(t=>{
+    t.oninput=()=>{ const r=getRec(t.dataset.memo, wk); r.memo=t.value; r.u=Date.now(); save(); };
+  });
+}
+function updateTal(sid){
+  const rec=getRec(sid, weekKey(curWeek));
+  const el=document.querySelector(`[data-tal="${sid}"]`);
+  if(el) el.textContent="🪙 "+calcTalent(rec)+" 달란트";
+  // 주간 합계 갱신
+  let total=0;
+  state.students.forEach(s=>{ total+=calcTalent(getRec(s.id, weekKey(curWeek))); });
+  document.getElementById("wkTotal").textContent="주간 달란트 "+total;
+  // 반별 소계 갱신 (DOM 순서 = groupByClass 순서)
+  const groups=groupByClass().filter(g=>g.students.length);
+  document.querySelectorAll(".clstal").forEach((node,i)=>{
+    const g=groups[i]; if(!g) return;
+    let t=0; g.students.forEach(s=>{ t+=calcTalent(getRec(s.id, weekKey(curWeek))); });
+    node.textContent="🪙 "+t;
+  });
+}
+
+function groupByClass(){
+  return state.classes.map(cls=>({
+    cls,
+    students: state.students.filter(s=>s.className===cls)
+  })).concat(
+    // 반이 삭제된 학생 처리
+    (()=>{
+      const orphan=state.students.filter(s=>!state.classes.includes(s.className));
+      return orphan.length?[{cls:"미분류", students:orphan}]:[];
+    })()
+  );
+}
+
+/* 주간 이동 */
+document.getElementById("prevWk").onclick=()=>{ curWeek.setDate(curWeek.getDate()-7); renderCheck(); };
+document.getElementById("nextWk").onclick=()=>{ curWeek.setDate(curWeek.getDate()+7); renderCheck(); };
+document.getElementById("thisWk").onclick=()=>{ curWeek=sundayOf(new Date()); renderCheck(); };
+document.getElementById("toggleAll").onclick=()=>{
+  const cls=groupByClass().filter(g=>g.students.length).map(g=>g.cls);
+  const anyOpen=cls.some(c=>!collapsed[c]);
+  cls.forEach(c=>{ collapsed[c]=anyOpen; });  // 하나라도 열려있으면 전체 접기, 아니면 전체 펼치기
+  saveCollapsed(); renderCheck();
+};
+
+/* ---------- 학생 관리 ---------- */
+function renderStudents(){
+  const box=document.getElementById("stuManage");
+  box.innerHTML="";
+  if(state.students.length===0){
+    box.innerHTML=`<div class="card empty"><div class="big">＋</div>학생을 추가해 시작하세요.</div>`;
+    return;
+  }
+  groupByClass().forEach(({cls, students})=>{
+    if(students.length===0 && !state.classes.includes(cls)) return;
+    const card=document.createElement("div");
+    card.className="card";
+    const canDel = state.classes.includes(cls);
+    card.innerHTML=`<div class="classhdr" style="margin-top:0">${esc(cls)} <span class="tag">${students.length}명</span>
+      ${canDel?`<button class="btn grey sm" style="margin-left:auto" data-delcls="${esc(cls)}">반 삭제</button>`:""}</div>`;
+    students.forEach(stu=>{
+      const r=document.createElement("div");
+      r.className="stu";
+      const tel=(num)=> num? `<a class="callbtn" href="tel:${esc(num.replace(/[^0-9+]/g,''))}">📞 ${esc(num)}</a>` : `<span class="nocontact">미입력</span>`;
+      r.innerHTML=`
+        <div class="top">
+          <span class="nm">${esc(stu.name)}</span>
+          <span class="row" style="gap:6px">
+            <button class="btn ghost sm" data-editstu="${stu.id}">수정</button>
+            <button class="del-x" data-delstu="${stu.id}" title="삭제">🗑</button>
+          </span>
+        </div>
+        <div class="contact-lines">
+          <div class="cline"><span class="ctag">학생</span>${tel(stu.phone)}</div>
+          <div class="cline"><span class="ctag">학부모</span>${stu.parent?`<b>${esc(stu.parent)}</b> `:""}${tel(stu.parentPhone)}</div>
+        </div>`;
+      card.appendChild(r);
+    });
+    box.appendChild(card);
+  });
+  document.querySelectorAll("[data-editstu]").forEach(b=>{
+    b.onclick=()=>openStuModal(state.students.find(s=>s.id===b.dataset.editstu));
+  });
+  document.querySelectorAll("[data-delstu]").forEach(b=>{
+    b.onclick=()=>{
+      const stu=state.students.find(s=>s.id===b.dataset.delstu);
+      if(confirm(`'${stu.name}' 학생을 삭제할까요? 기록도 함께 삭제됩니다.`)){
+        state.students=state.students.filter(s=>s.id!==b.dataset.delstu);
+        delete state.records[b.dataset.delstu];
+        if(!state.deleted.includes(b.dataset.delstu)) state.deleted.push(b.dataset.delstu);
+        bumpCfg(); save(); renderStudents();
+      }
+    };
+  });
+  document.querySelectorAll("[data-delcls]").forEach(b=>{
+    b.onclick=()=>{
+      const cls=b.dataset.delcls;
+      const cnt=state.students.filter(s=>s.className===cls).length;
+      if(confirm(`'${cls}' 반을 삭제할까요?`+(cnt?` 소속 학생 ${cnt}명은 '미분류'로 이동합니다.`:""))){
+        state.classes=state.classes.filter(c=>c!==cls);
+        bumpCfg(); save(); renderStudents();
+      }
+    };
+  });
+}
+
+/* 학생 추가/편집 모달 */
+const stuModal=document.getElementById("stuModal");
+let editingStuId=null;
+function openStuModal(stu){
+  if(state.classes.length===0){ alert("먼저 반을 추가하세요."); return; }
+  editingStuId = stu? stu.id : null;
+  document.getElementById("stuModalTitle").textContent = stu? "학생 정보 수정" : "학생 추가";
+  const sel=document.getElementById("stuClass"); sel.innerHTML="";
+  state.classes.forEach(c=>{ const o=document.createElement("option");o.value=c;o.textContent=c;
+    if(stu&&stu.className===c)o.selected=true; sel.appendChild(o); });
+  document.getElementById("stuName").value = stu? stu.name : "";
+  document.getElementById("stuPhone").value = stu? (stu.phone||"") : "";
+  document.getElementById("stuParent").value = stu? (stu.parent||"") : "";
+  document.getElementById("stuParentPhone").value = stu? (stu.parentPhone||"") : "";
+  stuModal.classList.add("show");
+  document.getElementById("stuName").focus();
+}
+document.getElementById("addStuBtn").onclick=()=>openStuModal(null);
+document.getElementById("stuCancel").onclick=()=>stuModal.classList.remove("show");
+document.getElementById("stuSave").onclick=()=>{
+  const name=document.getElementById("stuName").value.trim();
+  if(!name){ alert("이름을 입력하세요."); return; }
+  const data={
+    name,
+    className:document.getElementById("stuClass").value,
+    phone:document.getElementById("stuPhone").value.trim(),
+    parent:document.getElementById("stuParent").value.trim(),
+    parentPhone:document.getElementById("stuParentPhone").value.trim()
+  };
+  if(editingStuId){
+    Object.assign(state.students.find(s=>s.id===editingStuId), data);
+  }else{
+    state.students.push(Object.assign({id:"s"+(state.seq++)}, data));
+  }
+  bumpCfg(); save(); stuModal.classList.remove("show"); renderStudents();
+};
+document.getElementById("stuName").addEventListener("keydown",e=>{ if(e.key==="Enter")document.getElementById("stuSave").click(); });
+
+/* 반 추가 모달 */
+const classModal=document.getElementById("classModal");
+document.getElementById("addClassBtn").onclick=()=>{
+  document.getElementById("className").value=""; classModal.classList.add("show");
+  document.getElementById("className").focus();
+};
+document.getElementById("classCancel").onclick=()=>classModal.classList.remove("show");
+document.getElementById("classSave").onclick=()=>{
+  const nm=document.getElementById("className").value.trim();
+  if(!nm){ alert("반 이름을 입력하세요."); return; }
+  if(state.classes.includes(nm)){ alert("이미 있는 반입니다."); return; }
+  state.classes.push(nm); bumpCfg(); save(); classModal.classList.remove("show"); renderStudents();
+};
+document.getElementById("className").addEventListener("keydown",e=>{ if(e.key==="Enter")document.getElementById("classSave").click(); });
+
+/* ---------- 설정 ---------- */
+function renderSettings(){
+  const box=document.getElementById("talentSettings");
+  box.innerHTML="";
+  ITEMS.forEach(it=>{
+    const unit = it.key==="qt" ? "달란트 / 하루" : "달란트";
+    const row=document.createElement("div");
+    row.className="set-item";
+    row.innerHTML=`<span class="lbl">${it.label}<small>${it.key==="qt"?"실천한 일수만큼 곱해서 적립":"완료 시 적립"}</small></span>
+      <span class="row"><input type="number" min="0" value="${state.talents[it.key]}" data-tal="${it.key}"> <small style="color:var(--muted)">${unit}</small></span>`;
+    box.appendChild(row);
+  });
+  box.querySelectorAll("[data-tal]").forEach(inp=>{
+    inp.onchange=()=>{ state.talents[inp.dataset.tal]=Math.max(0, parseInt(inp.value)||0); bumpCfg(); save(); };
+  });
+  if(typeof reflectSyncUI==="function") reflectSyncUI();
+}
+
+/* ---------- 통계·리포트 ---------- */
+let repView = "class";   // "class" | "all"
+function ymd(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function allRecordedWeeks(){
+  const set=new Set();
+  Object.values(state.records).forEach(byWk=>Object.keys(byWk).forEach(w=>set.add(w)));
+  return [...set].sort();
+}
+function weeksInRange(){
+  const range=document.getElementById("repRange").value;
+  if(range==="week") return [weekKey(curWeek)];
+  const all=allRecordedWeeks();
+  if(range==="month"){
+    const cutoff=sundayOf(new Date(curWeek)); cutoff.setDate(cutoff.getDate()-21);
+    return all.filter(w=> new Date(w) >= cutoff && new Date(w) <= curWeek);
+  }
+  if(range==="custom"){
+    const s=document.getElementById("repStart").value, e=document.getElementById("repEnd").value;
+    const sd=s? sundayOf(new Date(s)) : null;
+    const ed=e? new Date(e) : null; if(ed) ed.setHours(23,59,59,999);
+    return all.filter(w=>{ const d=new Date(w); return (!sd||d>=sd) && (!ed||d<=ed); });
+  }
+  return all; // 전체 기간
+}
+function rangeLabel(){
+  const names={all:"전체 기간", month:"최근 4주", week:"이번 주간", custom:"직접 설정"};
+  const range=document.getElementById("repRange").value;
+  return (names[range]||"")+" · 집계된 주 "+weeksInRange().length+"개";
+}
+// 한 학생의 기간 합계
+function aggStudent(stu, weeks){
+  let att=0, rec=0, tal=0, qt=0, mem=0, fam=0, tr=0;
+  weeks.forEach(wk=>{
+    const r=state.records[stu.id] && state.records[stu.id][wk];
+    if(!r) return; rec++;
+    if(r.attendance)att++; if(r.memorize)mem++; if(r.family)fam++; if(r.transcribe)tr++;
+    qt+=r.qt||0; tal+=calcTalent(r);
+  });
+  return {stu, att, rec, qt, mem, fam, tr, tal};
+}
+function sumAgg(list){
+  return list.reduce((t,a)=>({att:t.att+a.att,qt:t.qt+a.qt,mem:t.mem+a.mem,
+    fam:t.fam+a.fam,tr:t.tr+a.tr,tal:t.tal+a.tal}),{att:0,qt:0,mem:0,fam:0,tr:0,tal:0});
+}
+function repHint(){
+  return `<div class="hint" style="padding:0 4px 4px">숫자는 선택한 기간의 <b>합계</b>입니다. `+
+    `출석·암송·가정예배·필사는 실천한 주(회), QT는 실천한 날의 총합, 달란트는 항목 배점 합계입니다.</div>`;
+}
+function renderReport(){
+  const weeks=weeksInRange();
+  const info=document.getElementById("repRangeInfo"); if(info) info.textContent=rangeLabel();
+
+  // 요약 카드 (전체 기준)
+  let tAtt=0,tWeeks=0,tTal=0,tQt=0,tQtCnt=0;
+  state.students.forEach(stu=>{ const a=aggStudent(stu,weeks);
+    tAtt+=a.att; tWeeks+=a.rec; tTal+=a.tal; tQt+=a.qt; tQtCnt+=a.rec; });
+  const attRate=tWeeks?Math.round(tAtt/tWeeks*100):0;
+  const qtAvg=tQtCnt?(tQt/tQtCnt).toFixed(1):"0";
+  document.getElementById("statCards").innerHTML=`
+    <div class="stat"><div class="v">${state.students.length}</div><div class="l">전체 학생</div></div>
+    <div class="stat"><div class="v">${attRate}%</div><div class="l">평균 출석률</div></div>
+    <div class="stat"><div class="v">${qtAvg}</div><div class="l">QT 평균(주당 일수)</div></div>
+    <div class="stat"><div class="v gold">${tTal}</div><div class="l">총 달란트</div></div>`;
+
+  const body=document.getElementById("repBody");
+  if(state.students.length===0){ body.innerHTML=`<div class="card empty">데이터가 없습니다.</div>`; return; }
+
+  const th=`<th class="name">이름</th><th>출석</th><th>QT</th><th>암송</th><th>가정예배</th><th>필사</th><th>🪙달란트</th>`;
+  const row=(a)=>`<tr><td class="name">${esc(a.stu.name)}</td>
+    <td>${a.att}</td><td>${a.qt}</td><td>${a.mem}</td><td>${a.fam}</td><td>${a.tr}</td><td class="tgold">${a.tal}</td></tr>`;
+  const totrow=(label,t)=>`<tr class="totrow"><td class="name">${label}</td>
+    <td>${t.att}</td><td>${t.qt}</td><td>${t.mem}</td><td>${t.fam}</td><td>${t.tr}</td><td>${t.tal}</td></tr>`;
+
+  if(repView==="class"){
+    let html="";
+    groupByClass().forEach(({cls, students})=>{
+      if(!students.length) return;
+      const aggs=students.map(s=>aggStudent(s,weeks)).sort((a,b)=>b.tal-a.tal);
+      const tot=sumAgg(aggs);
+      html+=`<div class="card">
+        <div class="classhdr" style="margin-top:0">${esc(cls)} <span class="tag">${students.length}명</span>
+          <span class="clstal" style="margin-left:auto">🪙 ${tot.tal}</span></div>
+        <div class="tblwrap"><table><thead><tr>${th}</tr></thead><tbody>
+          ${aggs.map(row).join("")}
+          ${totrow("반 합계",tot)}
+        </tbody></table></div></div>`;
+    });
+    body.innerHTML=html+repHint();
+  }else{
+    const aggs=state.students.map(s=>aggStudent(s,weeks)).sort((a,b)=>b.tal-a.tal);
+    const tot=sumAgg(aggs);
+    body.innerHTML=`<div class="card">
+      <div class="classhdr" style="margin-top:0">전체 학생 <span class="tag">${state.students.length}명</span>
+        <span class="clstal" style="margin-left:auto">🪙 ${tot.tal}</span></div>
+      <div class="tblwrap"><table><thead><tr><th class="name">이름</th><th>반</th><th>출석</th><th>QT</th><th>암송</th><th>가정예배</th><th>필사</th><th>🪙달란트</th></tr></thead><tbody>
+        ${aggs.map(a=>`<tr><td class="name">${esc(a.stu.name)}</td><td>${esc(a.stu.className)}</td>
+          <td>${a.att}</td><td>${a.qt}</td><td>${a.mem}</td><td>${a.fam}</td><td>${a.tr}</td><td class="tgold">${a.tal}</td></tr>`).join("")}
+        <tr class="totrow"><td class="name">전체 합계</td><td></td><td>${tot.att}</td><td>${tot.qt}</td><td>${tot.mem}</td><td>${tot.fam}</td><td>${tot.tr}</td><td>${tot.tal}</td></tr>
+      </tbody></table></div></div>`+repHint();
+  }
+}
+/* 리포트 컨트롤 */
+document.getElementById("repRange").onchange=()=>{
+  const val=document.getElementById("repRange").value;
+  document.getElementById("customRange").style.display = val==="custom"?"":"none";
+  if(val==="custom"){
+    const st=document.getElementById("repStart"), en=document.getElementById("repEnd");
+    const all=allRecordedWeeks();
+    if(!st.value) st.value = all.length? all[0] : ymd(curWeek);
+    if(!en.value) en.value = ymd(new Date());
+  }
+  renderReport();
+};
+document.getElementById("repStart").onchange=renderReport;
+document.getElementById("repEnd").onchange=renderReport;
+document.querySelectorAll(".segbtn").forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll(".segbtn").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active"); repView=b.dataset.view; renderReport();
+  };
+});
+
+/* ---------- 엑셀 내보내기 ---------- */
+document.getElementById("exportBtn").onclick=()=>{
+  const weeks=weeksInRange();
+  const wb=XLSX.utils.book_new();
+
+  // 시트1: 요약
+  const sum=[["이름","반","출석","기록주수","출석률(%)","QT평균","성경암송","가정예배","성경필사","달란트"]];
+  state.students.forEach(stu=>{
+    let att=0,rec=0,tal=0,qt=0,mem=0,fam=0,tr=0;
+    weeks.forEach(wk=>{
+      const r=state.records[stu.id] && state.records[stu.id][wk];
+      if(!r) return; rec++;
+      if(r.attendance)att++; if(r.memorize)mem++; if(r.family)fam++; if(r.transcribe)tr++;
+      qt+=r.qt||0; tal+=calcTalent(r);
+    });
+    sum.push([stu.name, stu.className, att, rec, rec?Math.round(att/rec*100):0,
+      rec?+(qt/rec).toFixed(1):0, mem, fam, tr, tal]);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sum), "요약");
+
+  // 시트2: 주별 상세
+  const det=[["주간(주일)","반","이름","출석","QT(0-7)","성경암송","가정예배","성경필사","달란트","메모/기도제목"]];
+  weeks.forEach(wk=>{
+    state.students.forEach(stu=>{
+      const r=state.records[stu.id] && state.records[stu.id][wk];
+      if(!r) return;
+      det.push([wk, stu.className, stu.name, r.attendance?"O":"", r.qt||0,
+        r.memorize?"O":"", r.family?"O":"", r.transcribe?"O":"", calcTalent(r), r.memo||""]);
+    });
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(det), "주별상세");
+
+  // 시트3: 연락처
+  const con=[["반","이름","학생 연락처","학부모 성함","학부모 연락처"]];
+  state.students.forEach(stu=>{
+    con.push([stu.className, stu.name, stu.phone||"", stu.parent||"", stu.parentPhone||""]);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(con), "연락처");
+
+  const today=new Date();
+  const fn=`초등부_관리_${today.getFullYear()}${String(today.getMonth()+1).padStart(2,"0")}${String(today.getDate()).padStart(2,"0")}.xlsx`;
+  XLSX.writeFile(wb, fn);
+};
+
+/* ---------- 백업/복원/초기화 ---------- */
+document.getElementById("backupBtn").onclick=()=>{
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="초등부_백업_"+weekKey(new Date())+".json";
+  a.click();
+};
+document.getElementById("restoreBtn").onclick=()=>document.getElementById("restoreFile").click();
+document.getElementById("restoreFile").onchange=(e)=>{
+  const f=e.target.files[0]; if(!f) return;
+  const fr=new FileReader();
+  fr.onload=()=>{
+    try{
+      const s=JSON.parse(fr.result);
+      if(!s.students||!s.classes) throw 0;
+      state=Object.assign(defaultState(), s); save();
+      alert("복원했습니다."); renderStudents(); renderSettings();
+    }catch(err){ alert("올바른 백업 파일이 아닙니다."); }
+  };
+  fr.readAsText(f);
+};
+document.getElementById("resetBtn").onclick=()=>{
+  if(confirm("모든 학생과 기록을 삭제합니다. 계속할까요?")){
+    if(confirm("정말 초기화할까요? 되돌릴 수 없습니다.")){
+      state=defaultState(); save(); renderStudents(); renderSettings(); renderCheck();
+      alert("초기화되었습니다.");
+    }
+  }
+};
+
+/* ---------- 유틸 ---------- */
+function esc(s){ return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* 모달 배경 클릭 닫기 */
+[stuModal,classModal].forEach(m=>{ m.onclick=(e)=>{ if(e.target===m)m.classList.remove("show"); }; });
+
+/* ================= 구글시트 동기화 ================= */
+const SYNC_URL_KEY="cchurch_sync_url";
+const AUTO_KEY="cchurch_sync_auto";
+let syncUrl = localStorage.getItem(SYNC_URL_KEY) || "";
+let autoSync = localStorage.getItem(AUTO_KEY)!=="0"; // 기본 켜짐
+let syncTimer=null, autoTimer=null, syncing=false;
+
+function hhmm(){ const d=new Date(); return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
+function isTyping(){ const a=document.activeElement; return a && (a.tagName==="TEXTAREA"||a.tagName==="INPUT"); }
+function setSyncStatus(cls, text){
+  const box=document.getElementById("syncStatusBox");
+  if(box){ box.className="sync-status "+cls; box.textContent=text; }
+  const pill=document.getElementById("syncPill");
+  if(pill){
+    if(!syncUrl){ pill.classList.add("hide"); }
+    else{ pill.classList.remove("hide"); pill.textContent=text.replace(/^✓ /,""); }
+  }
+}
+function rerenderCurrent(){
+  const active=document.querySelector(".tab.active").dataset.tab;
+  if(active==="check") renderCheck();
+  else if(active==="report") renderReport();
+  else if(active==="students") renderStudents();
+  else if(active==="settings"){ renderSettings(); reflectSyncUI(); }
+}
+function reflectSyncUI(){
+  const u=document.getElementById("syncUrl"); if(u && document.activeElement!==u) u.value=syncUrl;
+  const c=document.getElementById("autoSyncChk"); if(c) c.checked=autoSync;
+  if(!syncUrl) setSyncStatus("off","연동 안 됨 — 이 기기에만 저장됩니다");
+  else if(!syncing) setSyncStatus("ok","연동됨"+(lastSyncText?" · "+lastSyncText:""));
+}
+let lastSyncText="";
+
+/* 충돌 방지 병합: 기록은 수정시각(u) 최신 우선, 설정은 cfgUpdatedAt 최신 우선 */
+function mergeState(local, remote){
+  if(!remote || typeof remote!=="object") return local;
+  const del = new Set([...(local.deleted||[]), ...(remote.deleted||[])]);
+  const remoteNewer = (remote.cfgUpdatedAt||0) > (local.cfgUpdatedAt||0);
+  const base = remoteNewer ? remote : local;
+  const out = {
+    classes:(base.classes||[]).slice(),
+    talents:Object.assign({}, DEFAULT_TALENTS, base.talents||{}),
+    cfgUpdatedAt:Math.max(local.cfgUpdatedAt||0, remote.cfgUpdatedAt||0),
+    seq:Math.max(local.seq||1, remote.seq||1),
+    deleted:[...del],
+    students:[], records:{}
+  };
+  // 학생: id 합집합, 삭제된 건 제외, 겹치면 최신 설정 쪽
+  const byId={};
+  (local.students||[]).forEach(s=>{ if(!del.has(s.id)) byId[s.id]=s; });
+  (remote.students||[]).forEach(s=>{ if(del.has(s.id))return; if(!byId[s.id]||remoteNewer) byId[s.id]=s; });
+  out.students=Object.values(byId);
+  // 기록: sid+주 별 수정시각 비교
+  const sids=new Set([...Object.keys(local.records||{}), ...Object.keys(remote.records||{})]);
+  sids.forEach(sid=>{
+    if(del.has(sid)) return;
+    const lw=(local.records||{})[sid]||{}, rw=(remote.records||{})[sid]||{};
+    const wks=new Set([...Object.keys(lw), ...Object.keys(rw)]);
+    const m={};
+    wks.forEach(wk=>{ const a=lw[wk], b=rw[wk];
+      m[wk] = (a&&b) ? (((b.u||0)>(a.u||0))?b:a) : (a||b); });
+    if(Object.keys(m).length) out.records[sid]=m;
+  });
+  return out;
+}
+
+async function syncNow(showBusy, force){
+  if(!syncUrl || syncing) return;
+  syncing=true;
+  if(showBusy) setSyncStatus("busy","동기화 중…");
+  try{
+    let remote=null;
+    const res=await fetch(syncUrl+(syncUrl.includes("?")?"&":"?")+"t="+Date.now(), {method:"GET"});
+    const txt=await res.text();
+    if(txt && txt.trim()){ try{ const j=JSON.parse(txt); remote = (j&&j.state!==undefined)? j.state : j; }catch(e){} }
+    const merged=mergeState(state, remote);
+    const changed = JSON.stringify(merged)!==JSON.stringify(state);
+    state=merged; saveQuiet();
+    if(changed && !isTyping()) rerenderCurrent();
+    const remoteEmpty = !remote || ((!remote.students||!remote.students.length) && (!remote.records||!Object.keys(remote.records).length));
+    if(force || dirty || changed || remoteEmpty){
+      await fetch(syncUrl, {method:"POST", body: JSON.stringify({state:state})});
+      dirty=false;
+    }
+    lastSyncText=hhmm()+" 동기화됨";
+    setSyncStatus("ok","✓ "+lastSyncText);
+  }catch(e){
+    setSyncStatus("err","오프라인 — 자동 재시도");
+  }finally{ syncing=false; }
+}
+function scheduleSync(){ if(!syncUrl)return; clearTimeout(syncTimer); syncTimer=setTimeout(()=>syncNow(false), 1500); }
+function setupAuto(){ clearInterval(autoTimer); if(syncUrl && autoSync) autoTimer=setInterval(()=>syncNow(false), 15000); }
+
+document.getElementById("syncConnectBtn").onclick=async()=>{
+  const u=document.getElementById("syncUrl").value.trim();
+  if(!u){ alert("연동 주소를 입력하세요."); return; }
+  if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(u) &&
+     !confirm("주소 형식이 조금 달라 보입니다. 그래도 연결할까요?")) return;
+  syncUrl=u; localStorage.setItem(SYNC_URL_KEY,u);
+  autoSync=true; localStorage.setItem(AUTO_KEY,"1");
+  reflectSyncUI(); setupAuto();
+  await syncNow(true, true);
+};
+document.getElementById("syncNowBtn").onclick=()=>{
+  if(!syncUrl){ alert("먼저 연동 주소를 연결하세요."); return; }
+  syncNow(true);
+};
+document.getElementById("syncOffBtn").onclick=()=>{
+  if(!syncUrl){ return; }
+  if(!confirm("연동을 해제할까요? 이 기기의 데이터는 그대로 유지됩니다.")) return;
+  syncUrl=""; localStorage.removeItem(SYNC_URL_KEY); clearInterval(autoTimer); reflectSyncUI();
+};
+document.getElementById("autoSyncChk").onchange=(e)=>{
+  autoSync=e.target.checked; localStorage.setItem(AUTO_KEY, autoSync?"1":"0"); setupAuto();
+};
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden && syncUrl) syncNow(false); });
+window.addEventListener("beforeunload",()=>{
+  if(syncUrl && dirty){ try{ navigator.sendBeacon(syncUrl, JSON.stringify({state:state})); }catch(e){} }
+});
+
+/* 초기 렌더 */
+renderCheck();
+reflectSyncUI();
+setupAuto();
+if(syncUrl) syncNow(true);
+</script>
+</body>
+</html>
