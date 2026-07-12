@@ -906,7 +906,10 @@ function esc(s){ return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&l
 /* ================= 구글시트 동기화 ================= */
 const SYNC_URL_KEY="cchurch_sync_url";
 const AUTO_KEY="cchurch_sync_auto";
-let syncUrl = localStorage.getItem(SYNC_URL_KEY) || "";
+/* ★ 여기에 Apps Script 웹앱 주소(.../exec)를 넣으면, 링크를 여는 모든 기기가
+   설정 없이 자동으로 같은 구글시트에 연결됩니다. (따옴표 안에 붙여넣기) */
+const DEFAULT_SYNC_URL = "https://script.google.com/macros/s/AKfycbx2Uif4x5_Y5mO2R4RgL33rgJI2hBeZkriS5B-GC5yUVO4jTgEUsAc-mBA8w0XGDggW/exec";
+let syncUrl = localStorage.getItem(SYNC_URL_KEY) || DEFAULT_SYNC_URL;
 let autoSync = localStorage.getItem(AUTO_KEY)!=="0"; // 기본 켜짐
 let syncTimer=null, autoTimer=null, syncing=false;
 
