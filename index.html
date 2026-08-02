@@ -87,6 +87,16 @@
     border-radius:20px;padding:8px 14px;font-size:15px;font-weight:600}
   .clschip b{font-weight:800}
   .clschip.warn{background:#fbe9e7;color:var(--danger)}
+  .searchbar{position:relative;display:flex;align-items:center}
+  .searchbar input{width:100%;padding-right:42px}
+  .clearx{position:absolute;right:8px;border:none;background:#e7e3da;color:#555;width:32px;height:32px;
+    border-radius:50%;font-size:15px;cursor:pointer;line-height:1}
+  table.rept{min-width:520px}
+  table.rept th,table.rept td{white-space:nowrap}
+  table.rept td.name,table.rept th.name{text-align:left;max-width:140px;overflow:hidden;text-overflow:ellipsis}
+  .repctrl{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .repctrl select,.repctrl input{flex:1 1 108px;min-width:0}
+  .repctrl .dirbtn{flex:0 0 auto}
   .memo{width:100%;margin-top:10px;min-height:46px;resize:vertical;font-family:inherit;font-size:16px;
     padding:11px 12px;border:1px solid var(--line);border-radius:10px}
   .memo::placeholder{color:#b8b2a6}
@@ -192,6 +202,12 @@
         <span><i class="dot" style="background:var(--accent)"></i>성경필사</span>
       </div>
     </div>
+    <div class="card" style="padding:10px 12px">
+      <div class="searchbar">
+        <input id="stuSearch" placeholder="🔎 학생 이름 검색 (다른 반 포함)" style="width:100%">
+        <button class="clearx" id="stuSearchClear" style="display:none">✕</button>
+      </div>
+    </div>
     <div id="checkList"></div>
   </section>
 
@@ -216,6 +232,16 @@
           <button class="segbtn" data-view="all">전체 보기</button>
         </div>
         <button class="btn gold sm" id="exportBtn">⬇ 엑셀</button>
+      </div>
+      <div class="repctrl">
+        <select id="repClassFilter"></select>
+        <input id="repNameFilter" placeholder="🔎 이름">
+        <select id="repSort">
+          <option value="tal">달란트순</option>
+          <option value="name">이름순</option>
+          <option value="class">반순</option>
+        </select>
+        <button class="btn grey sm dirbtn" id="repSortDir">내림차순 ▼</button>
       </div>
       <div class="hint" id="repRangeInfo" style="margin-top:8px"></div>
     </div>
@@ -418,17 +444,61 @@ document.querySelectorAll(".tab").forEach(t=>{
 });
 
 /* ---------- 주간 체크 렌더 ---------- */
+function stuRowEl(stu, wk, showClass){
+  const rec=getRec(stu.id, wk);
+  const tal=calcTalent(rec);
+  const el=document.createElement("div");
+  el.className="stu";
+  el.innerHTML=`
+    <div class="top">
+      <span class="nm">${esc(stu.name)}${showClass?` <span class="tag">${esc(stu.className)}</span>`:""}</span>
+      <span class="tal" data-tal="${stu.id}">🪙 ${tal} 달란트</span>
+    </div>
+    <div class="chips">
+      <span class="chip ${rec.attendance?'on':''}" data-k="attendance" data-id="${stu.id}">출석</span>
+      <span class="qtbox ${rec.qt>0?'on':''}" data-id="${stu.id}">
+        <button data-qt="minus" data-id="${stu.id}">−</button>
+        <span class="qv">QT <b data-qtv="${stu.id}">${rec.qt}</b>/7</span>
+        <button data-qt="plus" data-id="${stu.id}">+</button>
+      </span>
+      <span class="chip gold ${rec.memorize?'on':''}" data-k="memorize" data-id="${stu.id}">성경암송</span>
+      <span class="chip ${rec.family?'on':''}" data-k="family" data-id="${stu.id}">가정예배</span>
+      <span class="chip ${rec.transcribe?'on':''}" data-k="transcribe" data-id="${stu.id}">성경필사</span>
+    </div>
+    <textarea class="memo" placeholder="메모 / 기도제목" data-memo="${stu.id}">${esc(rec.memo||"")}</textarea>`;
+  return el;
+}
 function renderCheck(){
   document.getElementById("wkLabel").innerHTML = fmtWeek(curWeek)+"<small>"+fmtRange(curWeek)+"</small>";
   const wk = weekKey(curWeek);
   const list = document.getElementById("checkList");
   list.innerHTML="";
   if(state.students.length===0){
-    list.innerHTML=`<div class="card empty"><div class="big">👥</div>등록된 학생이 없습니다.<br>「학생 관리」 탭에서 학생을 추가하세요.</div>`;
+    list.innerHTML=`<div class="card empty"><div class="big">👥</div>등록된 학생이 없습니다.<br>「학생」 탭에서 학생을 추가하세요.</div>`;
     document.getElementById("wkTotal").textContent="주간 달란트 0";
     return;
   }
+  // 주간 총 달란트 (전체 학생 기준)
   let weekTotal=0;
+  state.students.forEach(s=>{ weekTotal+=calcTalent(getRec(s.id, wk)); });
+  document.getElementById("wkTotal").textContent="주간 달란트 "+weekTotal;
+
+  // 검색 모드 (다른 반 포함 전체에서 이름 검색)
+  const si=document.getElementById("stuSearch");
+  const q=(si?si.value:"").trim().toLowerCase();
+  const clr=document.getElementById("stuSearchClear"); if(clr) clr.style.display=q?"":"none";
+  if(q){
+    const matches=state.students.filter(s=>(s.name||"").toLowerCase().includes(q));
+    const wrap=document.createElement("div"); wrap.className="card";
+    wrap.innerHTML=`<div class="classhdr" style="margin-top:0">🔎 검색 결과 <span class="tag">${matches.length}명</span></div><div class="clsbody"></div>`;
+    const body=wrap.querySelector(".clsbody");
+    if(!matches.length) body.innerHTML=`<div class="empty" style="padding:14px">일치하는 학생이 없습니다.</div>`;
+    matches.forEach(stu=> body.appendChild(stuRowEl(stu, wk, true)));
+    list.appendChild(wrap);
+    bindCheckEvents();
+    return;
+  }
+
   const byClass = groupByClass();
   byClass.forEach(({cls, students})=>{
     if(students.length===0) return;
@@ -444,29 +514,8 @@ function renderCheck(){
     const body=wrap.querySelector(".clsbody");
     let clsTotal=0;
     students.forEach(stu=>{
-      const rec=getRec(stu.id, wk);
-      const tal=calcTalent(rec); weekTotal+=tal; clsTotal+=tal;
-      const el=document.createElement("div");
-      el.className="stu";
-      el.innerHTML=`
-        <div class="top">
-          <span class="nm">${esc(stu.name)}</span>
-          <span class="tal" data-tal="${stu.id}">🪙 ${tal} 달란트</span>
-        </div>
-        <div class="chips">
-          <span class="chip ${rec.attendance?'on':''}" data-k="attendance" data-id="${stu.id}">출석</span>
-          <span class="qtbox ${rec.qt>0?'on':''}" data-id="${stu.id}">
-            <button data-qt="minus" data-id="${stu.id}">−</button>
-            <span class="qv">QT <b data-qtv="${stu.id}">${rec.qt}</b>/7</span>
-            <button data-qt="plus" data-id="${stu.id}">+</button>
-          </span>
-          <span class="chip gold ${rec.memorize?'on':''}" data-k="memorize" data-id="${stu.id}">성경암송</span>
-          <span class="chip ${rec.family?'on':''}" data-k="family" data-id="${stu.id}">가정예배</span>
-          <span class="chip ${rec.transcribe?'on':''}" data-k="transcribe" data-id="${stu.id}">성경필사</span>
-        </div>
-        <textarea class="memo" placeholder="메모 / 기도제목" data-memo="${stu.id}">${esc(rec.memo||"")}</textarea>
-      `;
-      body.appendChild(el);
+      clsTotal+=calcTalent(getRec(stu.id, wk));
+      body.appendChild(stuRowEl(stu, wk, false));
     });
     wrap.querySelector(".clstal").textContent="🪙 "+clsTotal;
     wrap.querySelector(".classhdr.toggle").onclick=()=>{
@@ -474,7 +523,6 @@ function renderCheck(){
     };
     list.appendChild(wrap);
   });
-  document.getElementById("wkTotal").textContent="주간 달란트 "+weekTotal;
   const openCls=byClass.filter(g=>g.students.length).map(g=>g.cls);
   const tb=document.getElementById("toggleAll");
   if(tb) tb.textContent = (openCls.length && openCls.some(c=>!collapsed[c])) ? "전체 접기" : "전체 펼치기";
@@ -545,6 +593,10 @@ document.getElementById("toggleAll").onclick=()=>{
   const anyOpen=cls.some(c=>!collapsed[c]);
   cls.forEach(c=>{ collapsed[c]=anyOpen; });  // 하나라도 열려있으면 전체 접기, 아니면 전체 펼치기
   saveCollapsed(); renderCheck();
+};
+document.getElementById("stuSearch").oninput=()=>renderCheck();
+document.getElementById("stuSearchClear").onclick=()=>{
+  const si=document.getElementById("stuSearch"); si.value=""; renderCheck(); si.focus();
 };
 
 /* ---------- 학생 관리 ---------- */
@@ -702,6 +754,35 @@ function renderSettings(){
 
 /* ---------- 통계·리포트 ---------- */
 let repView = "class";   // "class" | "all"
+let repClassFilter="__all", repNameFilter="", repSort="tal", repSortDir="desc";
+function applyFilterSort(aggs){
+  let r=aggs.slice();
+  if(repClassFilter && repClassFilter!=="__all"){
+    if(repClassFilter==="미분류") r=r.filter(a=>!state.classes.includes(a.stu.className));
+    else r=r.filter(a=>a.stu.className===repClassFilter);
+  }
+  const nf=repNameFilter.trim().toLowerCase();
+  if(nf) r=r.filter(a=>(a.stu.name||"").toLowerCase().includes(nf));
+  const dir=repSortDir==="asc"?1:-1;
+  r.sort((a,b)=>{
+    let c;
+    if(repSort==="name") c=(a.stu.name||"").localeCompare(b.stu.name||"","ko");
+    else if(repSort==="class") c=(a.stu.className||"").localeCompare(b.stu.className||"","ko")||(a.stu.name||"").localeCompare(b.stu.name||"","ko");
+    else c=a.tal-b.tal;
+    return c*dir;
+  });
+  return r;
+}
+function fillClassFilter(){
+  const sel=document.getElementById("repClassFilter"); if(!sel) return;
+  const cur=repClassFilter;
+  let html=`<option value="__all">전체 반</option>`;
+  state.classes.forEach(c=>{ html+=`<option value="${esc(c)}">${esc(c)}</option>`; });
+  if(state.students.some(s=>!state.classes.includes(s.className))) html+=`<option value="미분류">미분류</option>`;
+  sel.innerHTML=html;
+  sel.value = [...sel.options].some(o=>o.value===cur)? cur : "__all";
+  repClassFilter=sel.value;
+}
 function ymd(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
 function allRecordedWeeks(){
   const set=new Set();
@@ -746,7 +827,7 @@ function sumAgg(list){
 }
 function repHint(){
   return `<div class="hint" style="padding:0 4px 4px">숫자는 선택한 기간의 <b>합계</b>입니다. `+
-    `출석·암송·가정예배·필사는 실천한 주(회), QT는 실천한 날의 총합, 달란트는 항목 배점 합계입니다.</div>`;
+    `출석·암송·가정(가정예배)·필사는 실천한 주(회), QT는 실천한 날의 총합, 달란트는 항목 배점 합계입니다.</div>`;
 }
 function renderReport(){
   const weeks=weeksInRange();
@@ -764,10 +845,11 @@ function renderReport(){
     <div class="stat"><div class="v">${qtAvg}</div><div class="l">QT 평균(주당 일수)</div></div>
     <div class="stat"><div class="v gold">${tTal}</div><div class="l">총 달란트</div></div>`;
 
+  fillClassFilter();
   const body=document.getElementById("repBody");
   if(state.students.length===0){ body.innerHTML=`<div class="card empty">데이터가 없습니다.</div>`; return; }
 
-  const th=`<th class="name">이름</th><th>출석</th><th>QT</th><th>암송</th><th>가정예배</th><th>필사</th><th>🪙달란트</th>`;
+  const th=`<th class="name">이름</th><th>출석</th><th>QT</th><th>암송</th><th>가정</th><th>필사</th><th>🪙달란트</th>`;
   const row=(a)=>`<tr><td class="name">${esc(a.stu.name)}</td>
     <td>${a.att}</td><td>${a.qt}</td><td>${a.mem}</td><td>${a.fam}</td><td>${a.tr}</td><td class="tgold">${a.tal}</td></tr>`;
   const totrow=(label,t)=>`<tr class="totrow"><td class="name">${label}</td>
@@ -777,26 +859,30 @@ function renderReport(){
     let html="";
     groupByClass().forEach(({cls, students})=>{
       if(!students.length) return;
-      const aggs=students.map(s=>aggStudent(s,weeks)).sort((a,b)=>b.tal-a.tal);
+      if(repClassFilter!=="__all" && repClassFilter!==cls) return;
+      const aggs=applyFilterSort(students.map(s=>aggStudent(s,weeks)));
+      if(!aggs.length) return;
       const tot=sumAgg(aggs);
       html+=`<div class="card">
-        <div class="classhdr" style="margin-top:0">${esc(cls)} <span class="tag">${students.length}명</span>
+        <div class="classhdr" style="margin-top:0">${esc(cls)} <span class="tag">${aggs.length}명</span>
           <span class="clstal" style="margin-left:auto">🪙 ${tot.tal}</span></div>
-        <div class="tblwrap"><table><thead><tr>${th}</tr></thead><tbody>
+        <div class="tblwrap"><table class="rept"><thead><tr>${th}</tr></thead><tbody>
           ${aggs.map(row).join("")}
           ${totrow("반 합계",tot)}
         </tbody></table></div></div>`;
     });
-    body.innerHTML=html+repHint();
+    body.innerHTML=(html||`<div class="card empty">조건에 맞는 학생이 없습니다.</div>`)+repHint();
   }else{
-    const aggs=state.students.map(s=>aggStudent(s,weeks)).sort((a,b)=>b.tal-a.tal);
+    const aggs=applyFilterSort(state.students.map(s=>aggStudent(s,weeks)));
     const tot=sumAgg(aggs);
+    const rows=aggs.length? aggs.map(a=>`<tr><td class="name">${esc(a.stu.name)}</td><td>${esc(a.stu.className)}</td>
+          <td>${a.att}</td><td>${a.qt}</td><td>${a.mem}</td><td>${a.fam}</td><td>${a.tr}</td><td class="tgold">${a.tal}</td></tr>`).join("")
+      : `<tr><td class="empty" colspan="8">조건에 맞는 학생이 없습니다.</td></tr>`;
     body.innerHTML=`<div class="card">
-      <div class="classhdr" style="margin-top:0">전체 학생 <span class="tag">${state.students.length}명</span>
+      <div class="classhdr" style="margin-top:0">전체 학생 <span class="tag">${aggs.length}명</span>
         <span class="clstal" style="margin-left:auto">🪙 ${tot.tal}</span></div>
-      <div class="tblwrap"><table><thead><tr><th class="name">이름</th><th>반</th><th>출석</th><th>QT</th><th>암송</th><th>가정예배</th><th>필사</th><th>🪙달란트</th></tr></thead><tbody>
-        ${aggs.map(a=>`<tr><td class="name">${esc(a.stu.name)}</td><td>${esc(a.stu.className)}</td>
-          <td>${a.att}</td><td>${a.qt}</td><td>${a.mem}</td><td>${a.fam}</td><td>${a.tr}</td><td class="tgold">${a.tal}</td></tr>`).join("")}
+      <div class="tblwrap"><table class="rept"><thead><tr><th class="name">이름</th><th>반</th><th>출석</th><th>QT</th><th>암송</th><th>가정</th><th>필사</th><th>🪙달란트</th></tr></thead><tbody>
+        ${rows}
         <tr class="totrow"><td class="name">전체 합계</td><td></td><td>${tot.att}</td><td>${tot.qt}</td><td>${tot.mem}</td><td>${tot.fam}</td><td>${tot.tr}</td><td>${tot.tal}</td></tr>
       </tbody></table></div></div>`+repHint();
   }
@@ -821,6 +907,21 @@ document.querySelectorAll(".segbtn").forEach(b=>{
     b.classList.add("active"); repView=b.dataset.view; renderReport();
   };
 });
+document.getElementById("repClassFilter").onchange=(e)=>{ repClassFilter=e.target.value; renderReport(); };
+document.getElementById("repNameFilter").oninput=(e)=>{ repNameFilter=e.target.value; renderReport(); };
+document.getElementById("repSort").onchange=(e)=>{
+  repSort=e.target.value;
+  repSortDir = (repSort==="tal") ? "desc" : "asc";  // 이름·반은 오름차순, 달란트는 내림차순 기본
+  syncDirBtn(); renderReport();
+};
+document.getElementById("repSortDir").onclick=()=>{
+  repSortDir = repSortDir==="asc" ? "desc" : "asc";
+  syncDirBtn(); renderReport();
+};
+function syncDirBtn(){
+  const b=document.getElementById("repSortDir");
+  if(b) b.textContent = repSortDir==="asc" ? "오름차순 ▲" : "내림차순 ▼";
+}
 
 /* ---------- 엑셀 내보내기 ---------- */
 document.getElementById("exportBtn").onclick=()=>{
