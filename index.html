@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>우면동교회 초등부</title>
+<title>우면동교회 출석부</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root{
@@ -19,7 +19,7 @@
     box-shadow:0 2px 8px rgba(0,0,0,.12)}
   header h1{margin:0;font-size:21px;font-weight:800;display:flex;align-items:center;gap:8px}
   header .sub{font-size:13px;opacity:.9;margin-top:3px}
-  .tabs{display:flex;gap:4px;background:var(--card);padding:7px;margin:0;position:sticky;top:62px;z-index:15;
+  .tabs{display:flex;gap:4px;background:var(--card);padding:7px;margin:0;position:sticky;top:80px;z-index:15;
     border-bottom:1px solid var(--line)}
   .tab{flex:1 1 0;min-width:0;border:none;background:transparent;color:var(--muted);padding:12px 6px;
     font-size:15.5px;font-weight:700;border-radius:10px;cursor:pointer;white-space:nowrap;min-height:48px;
@@ -43,6 +43,26 @@
     border-radius:10px;background:#fff;color:var(--ink);min-height:48px}
   input:focus,select:focus{outline:2px solid var(--accent-l);border-color:var(--accent)}
   label.fld{font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:4px}
+  /* 로그인(부서 선택) */
+  .loginwrap{max-width:640px;margin:0 auto;padding:20px 14px}
+  .logintitle{text-align:center;font-size:20px;font-weight:800;color:var(--accent-d);margin:6px 0 4px}
+  .loginsub{text-align:center;color:var(--muted);font-size:14.5px;margin-bottom:20px}
+  .depttiles{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .depttile{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);
+    padding:20px 16px;text-align:center;cursor:pointer;min-height:110px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:6px}
+  .depttile:active{transform:translateY(1px);background:var(--accent-l)}
+  .depttile .dn{font-size:19px;font-weight:800;color:var(--accent-d)}
+  .depttile .dc{font-size:13.5px;color:var(--muted);font-weight:600}
+  .depttile .ic{font-size:30px;line-height:1}
+  .depttile.admin{grid-column:1 / -1;background:var(--accent);border-color:var(--accent)}
+  .depttile.admin .dn,.depttile.admin .dc{color:#fff}
+  .depttile.admin .dc{opacity:.9}
+  /* 부서 바 */
+  .deptbar{max-width:1100px;margin:0 auto;padding:12px 14px 0;display:flex;align-items:center;
+    justify-content:space-between;gap:10px}
+  .deptchip{font-size:17px;font-weight:800;color:var(--accent-d);background:var(--accent-l);
+    padding:8px 16px;border-radius:22px}
   .weekbar{display:flex;align-items:center;justify-content:center;gap:10px}
   .weekbar .wk{font-weight:700;font-size:16px;text-align:center;min-width:180px}
   .weekbar .wk small{display:block;font-size:12px;color:var(--muted);font-weight:500}
@@ -91,12 +111,6 @@
   .searchbar input{width:100%;padding-right:42px}
   .clearx{position:absolute;right:8px;border:none;background:#e7e3da;color:#555;width:32px;height:32px;
     border-radius:50%;font-size:15px;cursor:pointer;line-height:1}
-  table.rept{min-width:520px}
-  table.rept th,table.rept td{white-space:nowrap}
-  table.rept td.name,table.rept th.name{text-align:left;max-width:140px;overflow:hidden;text-overflow:ellipsis}
-  .repctrl{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-  .repctrl select,.repctrl input{flex:1 1 108px;min-width:0}
-  .repctrl .dirbtn{flex:0 0 auto}
   .memo{width:100%;margin-top:10px;min-height:46px;resize:vertical;font-family:inherit;font-size:16px;
     padding:11px 12px;border:1px solid var(--line);border-radius:10px}
   .memo::placeholder{color:#b8b2a6}
@@ -118,7 +132,12 @@
   .segbtn.active{background:#fff;color:var(--accent-d);box-shadow:0 1px 2px rgba(0,0,0,.1)}
   tr.totrow td{background:var(--accent-l);font-weight:800;color:var(--accent-d);border-top:2px solid var(--accent)}
   td.tgold{font-weight:800;color:var(--gold)}
-  th.name,td.name{white-space:nowrap}
+  table.rept{min-width:520px}
+  table.rept th,table.rept td{white-space:nowrap}
+  table.rept td.name,table.rept th.name{text-align:left;max-width:140px;overflow:hidden;text-overflow:ellipsis}
+  .repctrl{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .repctrl select,.repctrl input{flex:1 1 108px;min-width:0}
+  .repctrl .dirbtn{flex:0 0 auto}
   .empty{text-align:center;color:var(--muted);padding:30px 10px}
   .empty .big{font-size:34px;margin-bottom:6px}
   .set-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;
@@ -156,6 +175,7 @@
   @media(max-width:400px){
     .tabs{gap:2px;padding:6px 5px}
     .tab{font-size:14px;padding:11px 3px}
+    .depttiles{gap:10px}
   }
   @media(max-width:340px){
     .tab{font-size:13px}
@@ -165,163 +185,183 @@
 <body>
 <header>
   <div class="row between">
-    <h1>⛪ 우면동교회 초등부</h1>
+    <h1>⛪ 우면동교회 출석부</h1>
     <span class="syncpill hide" id="syncPill">동기화</span>
   </div>
-  <div class="sub">출석 · QT · 성경암송 · 가정예배 · 성경필사 · 달란트</div>
+  <div class="sub" id="headerSub">부서를 선택하세요</div>
 </header>
 
-<div class="tabs">
-  <button class="tab active" data-tab="check">✅ 출석부</button>
-  <button class="tab" data-tab="report">📊 통계</button>
-  <button class="tab" data-tab="students">👥 학생</button>
-  <button class="tab" data-tab="settings">⚙️ 설정</button>
-</div>
+<!-- 로그인: 부서 선택 -->
+<section id="loginScreen">
+  <div class="loginwrap">
+    <div class="logintitle">부서를 선택하세요</div>
+    <div class="loginsub">담당하시는 부서를 눌러 출석부를 여세요.</div>
+    <div class="depttiles" id="deptTiles"></div>
+  </div>
+</section>
 
-<main>
-  <!-- 주간 체크 -->
-  <section id="tab-check">
-    <div class="card">
-      <div class="weekbar">
-        <button class="navbtn" id="prevWk">‹</button>
-        <div class="wk" id="wkLabel">—<small></small></div>
-        <button class="navbtn" id="nextWk">›</button>
-      </div>
-      <div class="row between" style="margin-top:12px">
-        <div class="row" style="gap:8px">
-          <button class="btn ghost sm" id="thisWk">오늘 주간으로</button>
-          <button class="btn grey sm" id="toggleAll">전체 접기</button>
+<!-- 부서 앱 -->
+<section id="appScreen" style="display:none">
+  <div class="deptbar">
+    <span class="deptchip" id="deptName">부서</span>
+    <button class="btn grey sm" id="switchDept">← 부서 변경</button>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-tab="check">✅ 출석부</button>
+    <button class="tab" data-tab="report">📊 통계</button>
+    <button class="tab" data-tab="students">👥 학생</button>
+    <button class="tab" data-tab="settings">⚙️ 설정</button>
+  </div>
+  <main>
+    <!-- 출석부 -->
+    <section id="tab-check">
+      <div class="card">
+        <div class="weekbar">
+          <button class="navbtn" id="prevWk">‹</button>
+          <div class="wk" id="wkLabel">—<small></small></div>
+          <button class="navbtn" id="nextWk">›</button>
         </div>
-        <div class="tag" id="wkTotal">주간 달란트 0</div>
+        <div class="row between" style="margin-top:12px">
+          <div class="row" style="gap:8px">
+            <button class="btn ghost sm" id="thisWk">오늘 주간으로</button>
+            <button class="btn grey sm" id="toggleAll">전체 접기</button>
+          </div>
+          <div class="tag" id="wkTotal">주간 달란트 0</div>
+        </div>
+        <div class="legend">
+          <span><i class="dot" style="background:var(--accent)"></i>출석</span>
+          <span><i class="dot" style="background:var(--blue)"></i>QT(7일중)</span>
+          <span><i class="dot" style="background:var(--gold)"></i>성경암송</span>
+          <span><i class="dot" style="background:var(--accent)"></i>가정예배</span>
+          <span><i class="dot" style="background:var(--accent)"></i>성경필사</span>
+        </div>
       </div>
-      <div class="legend">
-        <span><i class="dot" style="background:var(--accent)"></i>출석</span>
-        <span><i class="dot" style="background:var(--blue)"></i>QT(7일중)</span>
-        <span><i class="dot" style="background:var(--gold)"></i>성경암송</span>
-        <span><i class="dot" style="background:var(--accent)"></i>가정예배</span>
-        <span><i class="dot" style="background:var(--accent)"></i>성경필사</span>
+      <div class="card" style="padding:10px 12px">
+        <div class="searchbar">
+          <input id="stuSearch" placeholder="🔎 학생 이름 검색 (다른 반 포함)" style="width:100%">
+          <button class="clearx" id="stuSearchClear" style="display:none">✕</button>
+        </div>
       </div>
-    </div>
-    <div class="card" style="padding:10px 12px">
-      <div class="searchbar">
-        <input id="stuSearch" placeholder="🔎 학생 이름 검색 (다른 반 포함)" style="width:100%">
-        <button class="clearx" id="stuSearchClear" style="display:none">✕</button>
-      </div>
-    </div>
-    <div id="checkList"></div>
-  </section>
+      <div id="checkList"></div>
+    </section>
 
-  <!-- 통계 -->
-  <section id="tab-report" style="display:none">
-    <div class="card">
-      <label class="fld">집계 범위</label>
-      <select id="repRange" style="width:100%">
-        <option value="all">전체 기간</option>
-        <option value="month">최근 4주</option>
-        <option value="week">이번 주간</option>
-        <option value="custom">직접 설정 (기간 선택)</option>
-      </select>
-      <div id="customRange" class="row" style="display:none;margin-top:10px;gap:8px;align-items:center">
-        <input type="date" id="repStart" style="flex:1;min-width:120px">
-        <span style="color:var(--muted);font-weight:700">~</span>
-        <input type="date" id="repEnd" style="flex:1;min-width:120px">
-      </div>
-      <div class="row between" style="margin-top:12px">
-        <div class="seg">
-          <button class="segbtn active" data-view="class">반별 보기</button>
-          <button class="segbtn" data-view="all">전체 보기</button>
-        </div>
-        <button class="btn gold sm" id="exportBtn">⬇ 엑셀</button>
-      </div>
-      <div class="repctrl">
-        <select id="repClassFilter"></select>
-        <input id="repNameFilter" placeholder="🔎 이름">
-        <select id="repSort">
-          <option value="tal">달란트순</option>
-          <option value="name">이름순</option>
-          <option value="class">반순</option>
+    <!-- 통계 -->
+    <section id="tab-report" style="display:none">
+      <div class="card">
+        <label class="fld">집계 범위</label>
+        <select id="repRange" style="width:100%">
+          <option value="all">전체 기간</option>
+          <option value="month">최근 4주</option>
+          <option value="week">이번 주간</option>
+          <option value="custom">직접 설정 (기간 선택)</option>
         </select>
-        <button class="btn grey sm dirbtn" id="repSortDir">내림차순 ▼</button>
+        <div id="customRange" class="row" style="display:none;margin-top:10px;gap:8px;align-items:center">
+          <input type="date" id="repStart" style="flex:1;min-width:120px">
+          <span style="color:var(--muted);font-weight:700">~</span>
+          <input type="date" id="repEnd" style="flex:1;min-width:120px">
+        </div>
+        <div class="row between" style="margin-top:12px">
+          <div class="seg">
+            <button class="segbtn active" data-view="class">반별 보기</button>
+            <button class="segbtn" data-view="all">전체 보기</button>
+          </div>
+          <button class="btn gold sm" id="exportBtn">⬇ 엑셀</button>
+        </div>
+        <div class="repctrl">
+          <select id="repClassFilter"></select>
+          <input id="repNameFilter" placeholder="🔎 이름">
+          <select id="repSort">
+            <option value="tal">달란트순</option>
+            <option value="name">이름순</option>
+            <option value="class">반순</option>
+          </select>
+          <button class="btn grey sm dirbtn" id="repSortDir">내림차순 ▼</button>
+        </div>
+        <div class="hint" id="repRangeInfo" style="margin-top:8px"></div>
       </div>
-      <div class="hint" id="repRangeInfo" style="margin-top:8px"></div>
-    </div>
-    <div class="stat-cards" id="statCards"></div>
-    <div id="repBody"></div>
-  </section>
+      <div class="stat-cards" id="statCards"></div>
+      <div id="repBody"></div>
+    </section>
 
-  <!-- 학생 관리 -->
-  <section id="tab-students" style="display:none">
+    <!-- 학생 관리 -->
+    <section id="tab-students" style="display:none">
+      <div class="card">
+        <div class="row between">
+          <strong>학생 명단</strong>
+          <div class="row">
+            <button class="btn ghost sm" id="addClassBtn">+ 반 추가</button>
+            <button class="btn sm" id="addStuBtn">+ 학생 추가</button>
+          </div>
+        </div>
+      </div>
+      <div id="stuManage"></div>
+    </section>
+
+    <!-- 설정 -->
+    <section id="tab-settings" style="display:none">
+      <div class="card">
+        <div class="classhdr" style="margin-top:0">🔗 구글시트 연동</div>
+        <div id="syncStatusBox" class="sync-status off">연동 안 됨</div>
+        <label class="fld" style="margin-top:12px">연동 주소 (Apps Script 웹앱 URL)</label>
+        <input id="syncUrl" type="url" inputmode="url" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%">
+        <div class="row" style="margin-top:10px;gap:8px">
+          <button class="btn sm" id="syncConnectBtn">연결</button>
+          <button class="btn ghost sm" id="syncNowBtn">🔄 지금 동기화</button>
+          <button class="btn grey sm" id="syncOffBtn">연동 해제</button>
+        </div>
+        <label class="row" style="margin-top:12px;gap:8px;font-size:15px;font-weight:600;cursor:pointer">
+          <input type="checkbox" id="autoSyncChk" style="width:22px;height:22px;min-height:auto"> 자동 동기화 (15초마다)
+        </label>
+        <div class="hint">모든 선생님이 <b>같은 주소</b>를 쓰면 부서별로 한 구글시트를 함께 편집합니다.</div>
+      </div>
+      <div class="card">
+        <div class="classhdr" style="margin-top:0">달란트 배점</div>
+        <div id="talentSettings"></div>
+        <div class="hint">완료 시 아래 점수만큼 적립됩니다. QT는 하루당 점수 × 실천한 일수입니다.</div>
+      </div>
+      <div class="card">
+        <div class="classhdr" style="margin-top:0">데이터 관리</div>
+        <div class="row">
+          <button class="btn ghost sm" id="backupBtn">💾 전체 백업 저장</button>
+          <button class="btn ghost sm" id="restoreBtn">📂 백업 불러오기</button>
+          <button class="btn danger sm" id="resetBtn">이 부서 초기화</button>
+        </div>
+        <input type="file" id="restoreFile" accept="application/json" style="display:none">
+        <div class="hint">백업은 모든 부서를 포함합니다. 초기화는 <b>현재 부서만</b> 비웁니다.</div>
+      </div>
+    </section>
+  </main>
+</section>
+
+<!-- 관리자 화면 -->
+<section id="adminScreen" style="display:none">
+  <div class="deptbar">
+    <span class="deptchip">🛡 전체 관리자</span>
+    <button class="btn grey sm" id="adminBack">← 부서 선택</button>
+  </div>
+  <main>
+    <div class="stat-cards" id="adminCards"></div>
     <div class="card">
       <div class="row between">
-        <strong>학생 명단</strong>
-        <div class="row">
-          <button class="btn ghost sm" id="addClassBtn">+ 반 추가</button>
-          <button class="btn sm" id="addStuBtn">+ 학생 추가</button>
-        </div>
+        <div class="classhdr" style="margin-top:0">부서별 현황</div>
+        <button class="btn gold sm" id="adminExportBtn">⬇ 전체 엑셀</button>
       </div>
+      <div class="hint" id="adminWeekInfo" style="margin-top:0;margin-bottom:8px"></div>
+      <div class="tblwrap"><table id="adminTable" class="rept"></table></div>
+      <div class="hint">‘이번 주’는 오늘이 속한 주일 기준입니다. ‘열기’로 해당 부서 출석부로 이동합니다.</div>
     </div>
-    <div id="stuManage"></div>
-  </section>
+  </main>
+</section>
 
-  <!-- 설정 -->
-  <section id="tab-settings" style="display:none">
-    <div class="card">
-      <div class="classhdr" style="margin-top:0">🔗 구글시트 연동 (선생님 공유)</div>
-      <div id="syncStatusBox" class="sync-status off">연동 안 됨 — 이 기기에만 저장됩니다</div>
-      <label class="fld" style="margin-top:12px">연동 주소 (Apps Script 웹앱 URL)</label>
-      <input id="syncUrl" type="url" inputmode="url" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%">
-      <div class="row" style="margin-top:10px;gap:8px">
-        <button class="btn sm" id="syncConnectBtn">연결</button>
-        <button class="btn ghost sm" id="syncNowBtn">🔄 지금 동기화</button>
-        <button class="btn grey sm" id="syncOffBtn">연동 해제</button>
-      </div>
-      <label class="row" style="margin-top:12px;gap:8px;font-size:15px;font-weight:600;cursor:pointer">
-        <input type="checkbox" id="autoSyncChk" style="width:22px;height:22px;min-height:auto"> 자동 동기화 (15초마다)
-      </label>
-      <div class="hint">모든 선생님이 <b>같은 주소</b>를 입력하면 한 구글시트를 함께 보고 편집합니다. 인터넷이 없을 땐 자동으로 이 기기에 저장했다가 연결되면 반영됩니다.</div>
-    </div>
-    <div class="card">
-      <div class="classhdr" style="margin-top:0">달란트 배점</div>
-      <div id="talentSettings"></div>
-      <div class="hint">각 항목을 완료하면 아래 점수만큼 달란트가 적립됩니다. QT는 하루당 점수 × 실천한 일수로 계산됩니다.</div>
-    </div>
-    <div class="card">
-      <div class="classhdr" style="margin-top:0">데이터 관리</div>
-      <div class="row">
-        <button class="btn ghost sm" id="backupBtn">💾 백업 파일 저장</button>
-        <button class="btn ghost sm" id="restoreBtn">📂 백업 불러오기</button>
-        <button class="btn danger sm" id="resetBtn">전체 초기화</button>
-      </div>
-      <input type="file" id="restoreFile" accept="application/json" style="display:none">
-      <div class="hint">모든 기록은 이 브라우저에 자동 저장됩니다. 다른 기기와 공유하거나 안전하게 보관하려면 백업 파일을 저장하세요.</div>
-    </div>
-  </section>
-</main>
-
-<!-- 학생 추가 모달 -->
+<!-- 학생 추가/편집 모달 -->
 <div class="modal-bg" id="stuModal">
   <div class="modal">
     <h3 id="stuModalTitle">학생 추가</h3>
-    <div class="fldg">
-      <label class="fld">이름</label>
-      <input id="stuName" placeholder="예) 김믿음" style="width:100%">
-    </div>
-    <div class="fldg">
-      <label class="fld">반</label>
-      <select id="stuClass" style="width:100%"></select>
-    </div>
-    <div class="fldg">
-      <label class="fld">학생 연락처 <span style="font-weight:400">(선택)</span></label>
-      <input id="stuPhone" type="tel" inputmode="tel" placeholder="010-0000-0000" style="width:100%">
-    </div>
-    <div class="fldg">
-      <label class="fld">학부모 성함 <span style="font-weight:400">(선택)</span></label>
-      <input id="stuParent" placeholder="예) 홍길동" style="width:100%">
-    </div>
-    <div class="fldg">
-      <label class="fld">학부모 연락처 <span style="font-weight:400">(선택)</span></label>
-      <input id="stuParentPhone" type="tel" inputmode="tel" placeholder="010-0000-0000" style="width:100%">
-    </div>
+    <div class="fldg"><label class="fld">이름</label><input id="stuName" placeholder="예) 김믿음" style="width:100%"></div>
+    <div class="fldg"><label class="fld">반</label><select id="stuClass" style="width:100%"></select></div>
+    <div class="fldg"><label class="fld">학생 연락처 <span style="font-weight:400">(선택)</span></label><input id="stuPhone" type="tel" inputmode="tel" placeholder="010-0000-0000" style="width:100%"></div>
+    <div class="fldg"><label class="fld">학부모 성함 <span style="font-weight:400">(선택)</span></label><input id="stuParent" placeholder="예) 홍길동" style="width:100%"></div>
+    <div class="fldg"><label class="fld">학부모 연락처 <span style="font-weight:400">(선택)</span></label><input id="stuParentPhone" type="tel" inputmode="tel" placeholder="010-0000-0000" style="width:100%"></div>
     <div class="row between" style="margin-top:8px">
       <button class="btn grey sm" id="stuCancel">취소</button>
       <button class="btn" id="stuSave">저장</button>
@@ -333,14 +373,8 @@
 <div class="modal-bg" id="classModal">
   <div class="modal">
     <h3>반 추가</h3>
-    <div class="fldg">
-      <label class="fld">반 이름</label>
-      <input id="className" placeholder="예) 1학년, 사랑반" style="width:100%">
-    </div>
-    <div class="fldg">
-      <label class="fld">현재 만들어진 반</label>
-      <div class="clschips" id="existingClasses"></div>
-    </div>
+    <div class="fldg"><label class="fld">반 이름</label><input id="className" placeholder="예) 1학년, 사랑반" style="width:100%"></div>
+    <div class="fldg"><label class="fld">현재 만들어진 반</label><div class="clschips" id="existingClasses"></div></div>
     <div class="row between" style="margin-top:8px">
       <button class="btn grey sm" id="classCancel">취소</button>
       <button class="btn" id="classSave">저장</button>
@@ -350,100 +384,120 @@
 
 <script>
 "use strict";
-/* ---------- 데이터 모델 ---------- */
-const STORE_KEY = "cchurch_elem_v1";
-const ITEMS = [
-  {key:"attendance", label:"출석",     type:"bool", color:"accent"},
-  {key:"qt",         label:"QT",       type:"count",color:"blue"},
-  {key:"memorize",   label:"성경암송", type:"bool", color:"gold"},
-  {key:"family",     label:"가정예배", type:"bool", color:"accent"},
-  {key:"transcribe", label:"성경필사", type:"bool", color:"accent"},
+/* ================= 데이터 모델 (다부서) ================= */
+const STORE_KEY="cchurch_root_v2";
+const OLD_KEY="cchurch_elem_v1";
+const DEPTS=["유아부","유치부","유년부","초등부","청소년부"];
+const DEPT_ICON={"유아부":"🍼","유치부":"🧸","유년부":"🎈","초등부":"📘","청소년부":"🎒"};
+const ITEMS=[
+  {key:"attendance",label:"출석"},{key:"qt",label:"QT"},{key:"memorize",label:"성경암송"},
+  {key:"family",label:"가정예배"},{key:"transcribe",label:"성경필사"}
 ];
-const DEFAULT_TALENTS = {attendance:2, qt:1, memorize:3, family:2, transcribe:2};
+const DEFAULT_TALENTS={attendance:2,qt:1,memorize:3,family:2,transcribe:2};
 
-function defaultState(){
-  return {
-    classes:["1반","2반"],
-    students:[],
-    records:{},           // records[studentId][weekKey] = {attendance,qt,memorize,family,transcribe,memo,u}
-    talents:{...DEFAULT_TALENTS},
-    seq:1,
-    cfgUpdatedAt:0,       // 명단/반/배점 변경 시각
-    deleted:[]            // 삭제된 학생 id (툼스톤)
-  };
+function blankDept(){ return {classes:[], students:[], records:{}, talents:{...DEFAULT_TALENTS}, seq:1, cfgUpdatedAt:0, deleted:[]}; }
+function defaultRoot(){ const d={}; DEPTS.forEach(x=>d[x]=blankDept()); return {v:2, depts:d}; }
+function migrateToRoot(obj){
+  if(!obj || typeof obj!=="object") return defaultRoot();
+  if(obj.depts){ const r=defaultRoot(); DEPTS.forEach(x=>{ if(obj.depts[x]) r.depts[x]=Object.assign(blankDept(), obj.depts[x]); }); return r; }
+  const r=defaultRoot();
+  if(obj.students||obj.classes) r.depts["초등부"]=Object.assign(blankDept(), obj); // 구버전 단일 → 초등부
+  return r;
 }
-let state = load();
-let curWeek = sundayOf(new Date());
-let dirty = false;        // 로컬 변경 후 아직 동기화 안 됨
-let collapsed = {};       // 출석부에서 접은 반 (이 기기 기준)
-try{ collapsed = JSON.parse(localStorage.getItem("cchurch_collapsed")||"{}"); }catch(e){ collapsed={}; }
+let root=loadRoot();
+let currentDept=null;   // null = 로그인(부서 선택) 상태
+let state=null;         // root.depts[currentDept]
+let curWeek=sundayOf(new Date());
+let dirty=false;
+let collapsed={};
+try{ collapsed=JSON.parse(localStorage.getItem("cchurch_collapsed")||"{}"); }catch(e){ collapsed={}; }
 function saveCollapsed(){ localStorage.setItem("cchurch_collapsed", JSON.stringify(collapsed)); }
 
-function load(){
+function loadRoot(){
   try{
-    const raw = localStorage.getItem(STORE_KEY);
-    if(!raw) return defaultState();
-    const s = JSON.parse(raw);
-    return Object.assign(defaultState(), s);
-  }catch(e){ return defaultState(); }
+    let raw=localStorage.getItem(STORE_KEY);
+    if(!raw){ const old=localStorage.getItem(OLD_KEY); if(old){ const r=migrateToRoot(JSON.parse(old)); localStorage.setItem(STORE_KEY, JSON.stringify(r)); return r; } return defaultRoot(); }
+    return migrateToRoot(JSON.parse(raw));
+  }catch(e){ return defaultRoot(); }
 }
-function save(){ localStorage.setItem(STORE_KEY, JSON.stringify(state)); dirty=true; scheduleSync(); }
-function saveQuiet(){ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
-function bumpCfg(){ state.cfgUpdatedAt = Date.now(); }
+function save(){ localStorage.setItem(STORE_KEY, JSON.stringify(root)); dirty=true; scheduleSync(); }
+function saveQuiet(){ localStorage.setItem(STORE_KEY, JSON.stringify(root)); }
+function bumpCfg(){ if(state) state.cfgUpdatedAt=Date.now(); }
 
 /* ---------- 날짜 유틸 ---------- */
-function sundayOf(d){
-  const x = new Date(d); x.setHours(0,0,0,0);
-  x.setDate(x.getDate() - x.getDay()); // 일요일 시작
-  return x;
-}
-function weekKey(d){
-  const x = sundayOf(d);
-  return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0");
-}
-function fmtWeek(d){
-  const s = sundayOf(d), e = new Date(s); e.setDate(e.getDate()+6);
-  const m=(x)=>(x.getMonth()+1), day=(x)=>x.getDate();
-  return `${s.getFullYear()}년 ${m(s)}월 ${day(s)}일`;
-}
-function fmtRange(d){
-  const s = sundayOf(d), e = new Date(s); e.setDate(e.getDate()+6);
-  return `${s.getMonth()+1}/${s.getDate()} ~ ${e.getMonth()+1}/${e.getDate()} (주일 기준)`;
-}
+function sundayOf(d){ const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-x.getDay()); return x; }
+function weekKey(d){ const x=sundayOf(d); return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0"); }
+function ymd(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function fmtWeek(d){ const s=sundayOf(d); return `${s.getFullYear()}년 ${s.getMonth()+1}월 ${s.getDate()}일`; }
+function fmtRange(d){ const s=sundayOf(d), e=new Date(s); e.setDate(e.getDate()+6); return `${s.getMonth()+1}/${s.getDate()} ~ ${e.getMonth()+1}/${e.getDate()} (주일 기준)`; }
 
-/* ---------- 레코드 접근 ---------- */
+/* ---------- 레코드/달란트 ---------- */
 function getRec(sid, wk){
   if(!state.records[sid]) state.records[sid]={};
   if(!state.records[sid][wk]) state.records[sid][wk]={attendance:false,qt:0,memorize:false,family:false,transcribe:false,memo:""};
   return state.records[sid][wk];
 }
-function calcTalent(rec){
-  if(!rec) return 0;
+function talentOf(rec, tal){
+  if(!rec) return 0; tal=tal||DEFAULT_TALENTS;
   let t=0;
-  t += rec.attendance ? state.talents.attendance : 0;
-  t += (rec.qt||0) * state.talents.qt;
-  t += rec.memorize ? state.talents.memorize : 0;
-  t += rec.family ? state.talents.family : 0;
-  t += rec.transcribe ? state.talents.transcribe : 0;
+  t+=rec.attendance?tal.attendance:0;
+  t+=(rec.qt||0)*tal.qt;
+  t+=rec.memorize?tal.memorize:0;
+  t+=rec.family?tal.family:0;
+  t+=rec.transcribe?tal.transcribe:0;
   return t;
 }
+function calcTalent(rec){ return talentOf(rec, state?state.talents:DEFAULT_TALENTS); }
+function groupByClass(){
+  return state.classes.map(cls=>({cls, students: state.students.filter(s=>s.className===cls)})).concat(
+    (()=>{ const orphan=state.students.filter(s=>!state.classes.includes(s.className)); return orphan.length?[{cls:"미분류", students:orphan}]:[]; })()
+  );
+}
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
-/* ---------- 탭 전환 ---------- */
-document.querySelectorAll(".tab").forEach(t=>{
-  t.onclick=()=>{
-    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-    t.classList.add("active");
-    const id=t.dataset.tab;
-    ["check","report","students","settings"].forEach(k=>{
-      document.getElementById("tab-"+k).style.display = (k===id)?"":"none";
-    });
-    if(id==="report") renderReport();
-    if(id==="students") renderStudents();
-    if(id==="settings") renderSettings();
-  };
-});
+/* ================= 화면 전환 (로그인/앱/관리자) ================= */
+function show(el){ ["loginScreen","appScreen","adminScreen"].forEach(id=>{ document.getElementById(id).style.display=(id===el)?"":"none"; }); }
+function renderLogin(){
+  document.getElementById("headerSub").textContent="부서를 선택하세요";
+  const box=document.getElementById("deptTiles"); box.innerHTML="";
+  DEPTS.forEach(d=>{
+    const n=root.depts[d].students.length;
+    const t=document.createElement("div");
+    t.className="depttile";
+    t.innerHTML=`<span class="ic">${DEPT_ICON[d]||"📗"}</span><span class="dn">${esc(d)}</span><span class="dc">학생 ${n}명</span>`;
+    t.onclick=()=>selectDept(d);
+    box.appendChild(t);
+  });
+  const admin=document.createElement("div");
+  admin.className="depttile admin";
+  admin.innerHTML=`<span class="dn">🛡 전체 관리자</span><span class="dc">모든 부서 현황 보기</span>`;
+  admin.onclick=openAdmin;
+  box.appendChild(admin);
+}
+function selectDept(d){
+  currentDept=d; state=root.depts[d];
+  document.getElementById("deptName").textContent=(DEPT_ICON[d]||"")+" "+d;
+  document.getElementById("headerSub").textContent=d;
+  show("appScreen");
+  activateTab("check");
+  if(syncUrl) syncNow(false);
+}
+function goLogin(){ currentDept=null; state=null; show("loginScreen"); renderLogin(); }
+function openAdmin(){ show("adminScreen"); document.getElementById("headerSub").textContent="전체 관리자"; renderAdmin(); if(syncUrl) syncNow(false); }
+document.getElementById("switchDept").onclick=goLogin;
+document.getElementById("adminBack").onclick=goLogin;
 
-/* ---------- 주간 체크 렌더 ---------- */
+function activateTab(id){
+  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active", x.dataset.tab===id));
+  ["check","report","students","settings"].forEach(k=>{ document.getElementById("tab-"+k).style.display=(k===id)?"":"none"; });
+  if(id==="check") renderCheck();
+  else if(id==="report") renderReport();
+  else if(id==="students") renderStudents();
+  else if(id==="settings"){ renderSettings(); reflectSyncUI(); }
+}
+document.querySelectorAll(".tab").forEach(t=>{ t.onclick=()=>activateTab(t.dataset.tab); });
+
+/* ================= 출석부 ================= */
 function stuRowEl(stu, wk, showClass){
   const rec=getRec(stu.id, wk);
   const tal=calcTalent(rec);
@@ -469,21 +523,16 @@ function stuRowEl(stu, wk, showClass){
   return el;
 }
 function renderCheck(){
-  document.getElementById("wkLabel").innerHTML = fmtWeek(curWeek)+"<small>"+fmtRange(curWeek)+"</small>";
-  const wk = weekKey(curWeek);
-  const list = document.getElementById("checkList");
-  list.innerHTML="";
+  document.getElementById("wkLabel").innerHTML=fmtWeek(curWeek)+"<small>"+fmtRange(curWeek)+"</small>";
+  const wk=weekKey(curWeek);
+  const list=document.getElementById("checkList"); list.innerHTML="";
   if(state.students.length===0){
     list.innerHTML=`<div class="card empty"><div class="big">👥</div>등록된 학생이 없습니다.<br>「학생」 탭에서 학생을 추가하세요.</div>`;
-    document.getElementById("wkTotal").textContent="주간 달란트 0";
-    return;
+    document.getElementById("wkTotal").textContent="주간 달란트 0"; return;
   }
-  // 주간 총 달란트 (전체 학생 기준)
-  let weekTotal=0;
-  state.students.forEach(s=>{ weekTotal+=calcTalent(getRec(s.id, wk)); });
+  let weekTotal=0; state.students.forEach(s=>{ weekTotal+=calcTalent(getRec(s.id,wk)); });
   document.getElementById("wkTotal").textContent="주간 달란트 "+weekTotal;
 
-  // 검색 모드 (다른 반 포함 전체에서 이름 검색)
   const si=document.getElementById("stuSearch");
   const q=(si?si.value:"").trim().toLowerCase();
   const clr=document.getElementById("stuSearchClear"); if(clr) clr.style.display=q?"":"none";
@@ -493,117 +542,72 @@ function renderCheck(){
     wrap.innerHTML=`<div class="classhdr" style="margin-top:0">🔎 검색 결과 <span class="tag">${matches.length}명</span></div><div class="clsbody"></div>`;
     const body=wrap.querySelector(".clsbody");
     if(!matches.length) body.innerHTML=`<div class="empty" style="padding:14px">일치하는 학생이 없습니다.</div>`;
-    matches.forEach(stu=> body.appendChild(stuRowEl(stu, wk, true)));
-    list.appendChild(wrap);
-    bindCheckEvents();
-    return;
+    matches.forEach(stu=>body.appendChild(stuRowEl(stu,wk,true)));
+    list.appendChild(wrap); bindCheckEvents(); return;
   }
 
-  const byClass = groupByClass();
-  byClass.forEach(({cls, students})=>{
+  const byClass=groupByClass();
+  byClass.forEach(({cls,students})=>{
     if(students.length===0) return;
-    const isCol = !!collapsed[cls];
-    const wrap=document.createElement("div");
-    wrap.className="card";
-    wrap.innerHTML=`<div class="classhdr toggle" data-cls="${esc(cls)}" style="margin-top:0">
+    const key=currentDept+"|"+cls;
+    const isCol=!!collapsed[key];
+    const wrap=document.createElement("div"); wrap.className="card";
+    wrap.innerHTML=`<div class="classhdr toggle" style="margin-top:0">
         <span class="caret">${isCol?'▸':'▾'}</span>${esc(cls)}
         <span class="tag">${students.length}명</span>
-        <span class="clstal" data-clstal="${esc(cls)}"></span>
+        <span class="clstal">🪙 0</span>
       </div>
       <div class="clsbody"${isCol?' style="display:none"':''}></div>`;
     const body=wrap.querySelector(".clsbody");
     let clsTotal=0;
-    students.forEach(stu=>{
-      clsTotal+=calcTalent(getRec(stu.id, wk));
-      body.appendChild(stuRowEl(stu, wk, false));
-    });
+    students.forEach(stu=>{ clsTotal+=calcTalent(getRec(stu.id,wk)); body.appendChild(stuRowEl(stu,wk,false)); });
     wrap.querySelector(".clstal").textContent="🪙 "+clsTotal;
-    wrap.querySelector(".classhdr.toggle").onclick=()=>{
-      collapsed[cls]=!collapsed[cls]; saveCollapsed(); renderCheck();
-    };
+    wrap.querySelector(".classhdr.toggle").onclick=()=>{ collapsed[key]=!collapsed[key]; saveCollapsed(); renderCheck(); };
     list.appendChild(wrap);
   });
-  const openCls=byClass.filter(g=>g.students.length).map(g=>g.cls);
+  const openCls=byClass.filter(g=>g.students.length).map(g=>currentDept+"|"+g.cls);
   const tb=document.getElementById("toggleAll");
-  if(tb) tb.textContent = (openCls.length && openCls.some(c=>!collapsed[c])) ? "전체 접기" : "전체 펼치기";
+  if(tb) tb.textContent=(openCls.length && openCls.some(k=>!collapsed[k]))?"전체 접기":"전체 펼치기";
   bindCheckEvents();
 }
-
 function bindCheckEvents(){
-  const wk = weekKey(curWeek);
+  const wk=weekKey(curWeek);
   document.querySelectorAll(".chip[data-k]").forEach(c=>{
-    c.onclick=()=>{
-      const rec=getRec(c.dataset.id, wk);
-      rec[c.dataset.k]=!rec[c.dataset.k]; rec.u=Date.now();
-      c.classList.toggle("on");
-      save(); updateTal(c.dataset.id);
-    };
+    c.onclick=()=>{ const rec=getRec(c.dataset.id,wk); rec[c.dataset.k]=!rec[c.dataset.k]; rec.u=Date.now(); c.classList.toggle("on"); save(); updateTal(c.dataset.id); };
   });
   document.querySelectorAll("[data-qt]").forEach(b=>{
-    b.onclick=()=>{
-      const rec=getRec(b.dataset.id, wk);
-      if(b.dataset.qt==="plus" && rec.qt<7) rec.qt++;
-      if(b.dataset.qt==="minus" && rec.qt>0) rec.qt--;
-      rec.u=Date.now();
-      document.querySelector(`[data-qtv="${b.dataset.id}"]`).textContent=rec.qt;
-      b.closest(".qtbox").classList.toggle("on", rec.qt>0);
-      save(); updateTal(b.dataset.id);
-    };
+    b.onclick=()=>{ const rec=getRec(b.dataset.id,wk); if(b.dataset.qt==="plus"&&rec.qt<7)rec.qt++; if(b.dataset.qt==="minus"&&rec.qt>0)rec.qt--; rec.u=Date.now();
+      document.querySelector(`[data-qtv="${b.dataset.id}"]`).textContent=rec.qt; b.closest(".qtbox").classList.toggle("on",rec.qt>0); save(); updateTal(b.dataset.id); };
   });
   document.querySelectorAll("[data-memo]").forEach(t=>{
-    t.oninput=()=>{ const r=getRec(t.dataset.memo, wk); r.memo=t.value; r.u=Date.now(); save(); };
+    t.oninput=()=>{ const r=getRec(t.dataset.memo,wk); r.memo=t.value; r.u=Date.now(); save(); };
   });
 }
 function updateTal(sid){
-  const rec=getRec(sid, weekKey(curWeek));
+  const rec=getRec(sid,weekKey(curWeek));
   const el=document.querySelector(`[data-tal="${sid}"]`);
   if(el) el.textContent="🪙 "+calcTalent(rec)+" 달란트";
-  // 주간 합계 갱신
-  let total=0;
-  state.students.forEach(s=>{ total+=calcTalent(getRec(s.id, weekKey(curWeek))); });
+  let total=0; state.students.forEach(s=>{ total+=calcTalent(getRec(s.id,weekKey(curWeek))); });
   document.getElementById("wkTotal").textContent="주간 달란트 "+total;
-  // 반별 소계 갱신 (DOM 순서 = groupByClass 순서)
   const groups=groupByClass().filter(g=>g.students.length);
   document.querySelectorAll(".clstal").forEach((node,i)=>{
-    const g=groups[i]; if(!g) return;
-    let t=0; g.students.forEach(s=>{ t+=calcTalent(getRec(s.id, weekKey(curWeek))); });
-    node.textContent="🪙 "+t;
+    const g=groups[i]; if(!g) return; let t=0; g.students.forEach(s=>{ t+=calcTalent(getRec(s.id,weekKey(curWeek))); }); node.textContent="🪙 "+t;
   });
 }
-
-function groupByClass(){
-  return state.classes.map(cls=>({
-    cls,
-    students: state.students.filter(s=>s.className===cls)
-  })).concat(
-    // 반이 삭제된 학생 처리
-    (()=>{
-      const orphan=state.students.filter(s=>!state.classes.includes(s.className));
-      return orphan.length?[{cls:"미분류", students:orphan}]:[];
-    })()
-  );
-}
-
-/* 주간 이동 */
 document.getElementById("prevWk").onclick=()=>{ curWeek.setDate(curWeek.getDate()-7); renderCheck(); };
 document.getElementById("nextWk").onclick=()=>{ curWeek.setDate(curWeek.getDate()+7); renderCheck(); };
 document.getElementById("thisWk").onclick=()=>{ curWeek=sundayOf(new Date()); renderCheck(); };
 document.getElementById("toggleAll").onclick=()=>{
-  const cls=groupByClass().filter(g=>g.students.length).map(g=>g.cls);
-  const anyOpen=cls.some(c=>!collapsed[c]);
-  cls.forEach(c=>{ collapsed[c]=anyOpen; });  // 하나라도 열려있으면 전체 접기, 아니면 전체 펼치기
-  saveCollapsed(); renderCheck();
+  const keys=groupByClass().filter(g=>g.students.length).map(g=>currentDept+"|"+g.cls);
+  const anyOpen=keys.some(k=>!collapsed[k]);
+  keys.forEach(k=>{ collapsed[k]=anyOpen; }); saveCollapsed(); renderCheck();
 };
 document.getElementById("stuSearch").oninput=()=>renderCheck();
-document.getElementById("stuSearchClear").onclick=()=>{
-  const si=document.getElementById("stuSearch"); si.value=""; renderCheck(); si.focus();
-};
+document.getElementById("stuSearchClear").onclick=()=>{ const si=document.getElementById("stuSearch"); si.value=""; renderCheck(); si.focus(); };
 
-/* ---------- 학생 관리 ---------- */
-/* 반 현황 요약 (항상 표시) */
+/* ================= 학생 관리 ================= */
 function classSummaryCard(){
-  const card=document.createElement("div");
-  card.className="card";
+  const card=document.createElement("div"); card.className="card";
   const counts=state.classes.map(c=>({c, n:state.students.filter(s=>s.className===c).length}));
   const orphan=state.students.filter(s=>!state.classes.includes(s.className)).length;
   let chips=counts.map(x=>`<span class="clschip">${esc(x.c)} <b>${x.n}명</b></span>`).join("");
@@ -615,24 +619,21 @@ function classSummaryCard(){
   return card;
 }
 function renderStudents(){
-  const box=document.getElementById("stuManage");
-  box.innerHTML="";
+  const box=document.getElementById("stuManage"); box.innerHTML="";
   box.appendChild(classSummaryCard());
   if(state.students.length===0 && state.classes.length===0){
     const e=document.createElement("div"); e.className="card empty";
     e.innerHTML=`<div class="big">＋</div>‘+ 반 추가’로 반을 만들고 ‘+ 학생 추가’로 학생을 등록하세요.`;
     box.appendChild(e);
   }
-  groupByClass().forEach(({cls, students})=>{
+  groupByClass().forEach(({cls,students})=>{
     if(students.length===0 && !state.classes.includes(cls)) return;
-    const card=document.createElement("div");
-    card.className="card";
-    const canDel = state.classes.includes(cls);
+    const card=document.createElement("div"); card.className="card";
+    const canDel=state.classes.includes(cls);
     card.innerHTML=`<div class="classhdr" style="margin-top:0">${esc(cls)} <span class="tag">${students.length}명</span>
       ${canDel?`<button class="btn grey sm" style="margin-left:auto" data-delcls="${esc(cls)}">반 삭제</button>`:""}</div>${students.length?"":'<div class="hint" style="padding:4px 4px 0">아직 등록된 학생이 없습니다.</div>'}`;
     students.forEach(stu=>{
-      const r=document.createElement("div");
-      r.className="stu";
+      const r=document.createElement("div"); r.className="stu";
       const tel=(num)=> num? `<a class="callbtn" href="tel:${esc(num.replace(/[^0-9+]/g,''))}">📞 ${esc(num)}</a>` : `<span class="nocontact">미입력</span>`;
       r.innerHTML=`
         <div class="top">
@@ -650,80 +651,58 @@ function renderStudents(){
     });
     box.appendChild(card);
   });
-  document.querySelectorAll("[data-editstu]").forEach(b=>{
-    b.onclick=()=>openStuModal(state.students.find(s=>s.id===b.dataset.editstu));
-  });
+  document.querySelectorAll("[data-editstu]").forEach(b=>{ b.onclick=()=>openStuModal(state.students.find(s=>s.id===b.dataset.editstu)); });
   document.querySelectorAll("[data-delstu]").forEach(b=>{
-    b.onclick=()=>{
-      const stu=state.students.find(s=>s.id===b.dataset.delstu);
+    b.onclick=()=>{ const stu=state.students.find(s=>s.id===b.dataset.delstu);
       if(confirm(`'${stu.name}' 학생을 삭제할까요? 기록도 함께 삭제됩니다.`)){
         state.students=state.students.filter(s=>s.id!==b.dataset.delstu);
         delete state.records[b.dataset.delstu];
         if(!state.deleted.includes(b.dataset.delstu)) state.deleted.push(b.dataset.delstu);
         bumpCfg(); save(); renderStudents();
-      }
-    };
+      } };
   });
   document.querySelectorAll("[data-delcls]").forEach(b=>{
-    b.onclick=()=>{
-      const cls=b.dataset.delcls;
-      const cnt=state.students.filter(s=>s.className===cls).length;
+    b.onclick=()=>{ const cls=b.dataset.delcls; const cnt=state.students.filter(s=>s.className===cls).length;
       if(confirm(`'${cls}' 반을 삭제할까요?`+(cnt?` 소속 학생 ${cnt}명은 '미분류'로 이동합니다.`:""))){
-        state.classes=state.classes.filter(c=>c!==cls);
-        bumpCfg(); save(); renderStudents();
-      }
-    };
+        state.classes=state.classes.filter(c=>c!==cls); bumpCfg(); save(); renderStudents();
+      } };
   });
 }
-
 /* 학생 추가/편집 모달 */
 const stuModal=document.getElementById("stuModal");
 let editingStuId=null;
 function openStuModal(stu){
   if(state.classes.length===0){ alert("먼저 반을 추가하세요."); return; }
-  editingStuId = stu? stu.id : null;
-  document.getElementById("stuModalTitle").textContent = stu? "학생 정보 수정" : "학생 추가";
+  editingStuId=stu?stu.id:null;
+  document.getElementById("stuModalTitle").textContent=stu?"학생 정보 수정":"학생 추가";
   const sel=document.getElementById("stuClass"); sel.innerHTML="";
-  state.classes.forEach(c=>{ const o=document.createElement("option");o.value=c;o.textContent=c;
-    if(stu&&stu.className===c)o.selected=true; sel.appendChild(o); });
-  document.getElementById("stuName").value = stu? stu.name : "";
-  document.getElementById("stuPhone").value = stu? (stu.phone||"") : "";
-  document.getElementById("stuParent").value = stu? (stu.parent||"") : "";
-  document.getElementById("stuParentPhone").value = stu? (stu.parentPhone||"") : "";
-  stuModal.classList.add("show");
-  document.getElementById("stuName").focus();
+  state.classes.forEach(c=>{ const o=document.createElement("option");o.value=c;o.textContent=c; if(stu&&stu.className===c)o.selected=true; sel.appendChild(o); });
+  document.getElementById("stuName").value=stu?stu.name:"";
+  document.getElementById("stuPhone").value=stu?(stu.phone||""):"";
+  document.getElementById("stuParent").value=stu?(stu.parent||""):"";
+  document.getElementById("stuParentPhone").value=stu?(stu.parentPhone||""):"";
+  stuModal.classList.add("show"); document.getElementById("stuName").focus();
 }
 document.getElementById("addStuBtn").onclick=()=>openStuModal(null);
 document.getElementById("stuCancel").onclick=()=>stuModal.classList.remove("show");
 document.getElementById("stuSave").onclick=()=>{
   const name=document.getElementById("stuName").value.trim();
   if(!name){ alert("이름을 입력하세요."); return; }
-  const data={
-    name,
-    className:document.getElementById("stuClass").value,
-    phone:document.getElementById("stuPhone").value.trim(),
-    parent:document.getElementById("stuParent").value.trim(),
-    parentPhone:document.getElementById("stuParentPhone").value.trim()
-  };
-  if(editingStuId){
-    Object.assign(state.students.find(s=>s.id===editingStuId), data);
-  }else{
-    state.students.push(Object.assign({id:"s"+(state.seq++)}, data));
-  }
+  const data={ name, className:document.getElementById("stuClass").value,
+    phone:document.getElementById("stuPhone").value.trim(), parent:document.getElementById("stuParent").value.trim(),
+    parentPhone:document.getElementById("stuParentPhone").value.trim() };
+  if(editingStuId) Object.assign(state.students.find(s=>s.id===editingStuId), data);
+  else state.students.push(Object.assign({id:"s"+(state.seq++)}, data));
   bumpCfg(); save(); stuModal.classList.remove("show"); renderStudents();
 };
 document.getElementById("stuName").addEventListener("keydown",e=>{ if(e.key==="Enter")document.getElementById("stuSave").click(); });
-
 /* 반 추가 모달 */
 const classModal=document.getElementById("classModal");
 document.getElementById("addClassBtn").onclick=()=>{
   document.getElementById("className").value="";
   const ex=document.getElementById("existingClasses");
-  ex.innerHTML = state.classes.length
-    ? state.classes.map(c=>`<span class="clschip">${esc(c)} <b>${state.students.filter(s=>s.className===c).length}명</b></span>`).join("")
-    : `<span class="nocontact">아직 없음</span>`;
-  classModal.classList.add("show");
-  document.getElementById("className").focus();
+  ex.innerHTML=state.classes.length? state.classes.map(c=>`<span class="clschip">${esc(c)} <b>${state.students.filter(s=>s.className===c).length}명</b></span>`).join("") : `<span class="nocontact">아직 없음</span>`;
+  classModal.classList.add("show"); document.getElementById("className").focus();
 };
 document.getElementById("classCancel").onclick=()=>classModal.classList.remove("show");
 document.getElementById("classSave").onclick=()=>{
@@ -734,27 +713,41 @@ document.getElementById("classSave").onclick=()=>{
 };
 document.getElementById("className").addEventListener("keydown",e=>{ if(e.key==="Enter")document.getElementById("classSave").click(); });
 
-/* ---------- 설정 ---------- */
+/* ================= 설정 ================= */
 function renderSettings(){
-  const box=document.getElementById("talentSettings");
-  box.innerHTML="";
+  const box=document.getElementById("talentSettings"); box.innerHTML="";
   ITEMS.forEach(it=>{
-    const unit = it.key==="qt" ? "달란트 / 하루" : "달란트";
-    const row=document.createElement("div");
-    row.className="set-item";
+    const unit=it.key==="qt"?"달란트 / 하루":"달란트";
+    const row=document.createElement("div"); row.className="set-item";
     row.innerHTML=`<span class="lbl">${it.label}<small>${it.key==="qt"?"실천한 일수만큼 곱해서 적립":"완료 시 적립"}</small></span>
       <span class="row"><input type="number" min="0" value="${state.talents[it.key]}" data-tal="${it.key}"> <small style="color:var(--muted)">${unit}</small></span>`;
     box.appendChild(row);
   });
-  box.querySelectorAll("[data-tal]").forEach(inp=>{
-    inp.onchange=()=>{ state.talents[inp.dataset.tal]=Math.max(0, parseInt(inp.value)||0); bumpCfg(); save(); };
-  });
+  box.querySelectorAll("[data-tal]").forEach(inp=>{ inp.onchange=()=>{ state.talents[inp.dataset.tal]=Math.max(0,parseInt(inp.value)||0); bumpCfg(); save(); }; });
   if(typeof reflectSyncUI==="function") reflectSyncUI();
 }
 
-/* ---------- 통계·리포트 ---------- */
-let repView = "class";   // "class" | "all"
-let repClassFilter="__all", repNameFilter="", repSort="tal", repSortDir="desc";
+/* ================= 통계·리포트 ================= */
+let repView="class", repClassFilter="__all", repNameFilter="", repSort="tal", repSortDir="desc";
+function allRecordedWeeks(){ const set=new Set(); Object.values(state.records).forEach(byWk=>Object.keys(byWk).forEach(w=>set.add(w))); return [...set].sort(); }
+function weeksInRange(){
+  const range=document.getElementById("repRange").value;
+  if(range==="week") return [weekKey(curWeek)];
+  const all=allRecordedWeeks();
+  if(range==="month"){ const cutoff=sundayOf(new Date(curWeek)); cutoff.setDate(cutoff.getDate()-21); return all.filter(w=> new Date(w)>=cutoff && new Date(w)<=curWeek); }
+  if(range==="custom"){ const s=document.getElementById("repStart").value, e=document.getElementById("repEnd").value;
+    const sd=s?sundayOf(new Date(s)):null; const ed=e?new Date(e):null; if(ed)ed.setHours(23,59,59,999);
+    return all.filter(w=>{ const d=new Date(w); return (!sd||d>=sd)&&(!ed||d<=ed); }); }
+  return all;
+}
+function rangeLabel(){ const names={all:"전체 기간",month:"최근 4주",week:"이번 주간",custom:"직접 설정"}; return (names[document.getElementById("repRange").value]||"")+" · 집계된 주 "+weeksInRange().length+"개"; }
+function aggStudent(stu, weeks){
+  let att=0,rec=0,tal=0,qt=0,mem=0,fam=0,tr=0;
+  weeks.forEach(wk=>{ const r=state.records[stu.id]&&state.records[stu.id][wk]; if(!r) return; rec++;
+    if(r.attendance)att++; if(r.memorize)mem++; if(r.family)fam++; if(r.transcribe)tr++; qt+=r.qt||0; tal+=calcTalent(r); });
+  return {stu,att,rec,qt,mem,fam,tr,tal};
+}
+function sumAgg(list){ return list.reduce((t,a)=>({att:t.att+a.att,qt:t.qt+a.qt,mem:t.mem+a.mem,fam:t.fam+a.fam,tr:t.tr+a.tr,tal:t.tal+a.tal}),{att:0,qt:0,mem:0,fam:0,tr:0,tal:0}); }
 function applyFilterSort(aggs){
   let r=aggs.slice();
   if(repClassFilter && repClassFilter!=="__all"){
@@ -764,13 +757,10 @@ function applyFilterSort(aggs){
   const nf=repNameFilter.trim().toLowerCase();
   if(nf) r=r.filter(a=>(a.stu.name||"").toLowerCase().includes(nf));
   const dir=repSortDir==="asc"?1:-1;
-  r.sort((a,b)=>{
-    let c;
+  r.sort((a,b)=>{ let c;
     if(repSort==="name") c=(a.stu.name||"").localeCompare(b.stu.name||"","ko");
     else if(repSort==="class") c=(a.stu.className||"").localeCompare(b.stu.className||"","ko")||(a.stu.name||"").localeCompare(b.stu.name||"","ko");
-    else c=a.tal-b.tal;
-    return c*dir;
-  });
+    else c=a.tal-b.tal; return c*dir; });
   return r;
 }
 function fillClassFilter(){
@@ -780,63 +770,14 @@ function fillClassFilter(){
   state.classes.forEach(c=>{ html+=`<option value="${esc(c)}">${esc(c)}</option>`; });
   if(state.students.some(s=>!state.classes.includes(s.className))) html+=`<option value="미분류">미분류</option>`;
   sel.innerHTML=html;
-  sel.value = [...sel.options].some(o=>o.value===cur)? cur : "__all";
-  repClassFilter=sel.value;
+  sel.value=[...sel.options].some(o=>o.value===cur)?cur:"__all"; repClassFilter=sel.value;
 }
-function ymd(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
-function allRecordedWeeks(){
-  const set=new Set();
-  Object.values(state.records).forEach(byWk=>Object.keys(byWk).forEach(w=>set.add(w)));
-  return [...set].sort();
-}
-function weeksInRange(){
-  const range=document.getElementById("repRange").value;
-  if(range==="week") return [weekKey(curWeek)];
-  const all=allRecordedWeeks();
-  if(range==="month"){
-    const cutoff=sundayOf(new Date(curWeek)); cutoff.setDate(cutoff.getDate()-21);
-    return all.filter(w=> new Date(w) >= cutoff && new Date(w) <= curWeek);
-  }
-  if(range==="custom"){
-    const s=document.getElementById("repStart").value, e=document.getElementById("repEnd").value;
-    const sd=s? sundayOf(new Date(s)) : null;
-    const ed=e? new Date(e) : null; if(ed) ed.setHours(23,59,59,999);
-    return all.filter(w=>{ const d=new Date(w); return (!sd||d>=sd) && (!ed||d<=ed); });
-  }
-  return all; // 전체 기간
-}
-function rangeLabel(){
-  const names={all:"전체 기간", month:"최근 4주", week:"이번 주간", custom:"직접 설정"};
-  const range=document.getElementById("repRange").value;
-  return (names[range]||"")+" · 집계된 주 "+weeksInRange().length+"개";
-}
-// 한 학생의 기간 합계
-function aggStudent(stu, weeks){
-  let att=0, rec=0, tal=0, qt=0, mem=0, fam=0, tr=0;
-  weeks.forEach(wk=>{
-    const r=state.records[stu.id] && state.records[stu.id][wk];
-    if(!r) return; rec++;
-    if(r.attendance)att++; if(r.memorize)mem++; if(r.family)fam++; if(r.transcribe)tr++;
-    qt+=r.qt||0; tal+=calcTalent(r);
-  });
-  return {stu, att, rec, qt, mem, fam, tr, tal};
-}
-function sumAgg(list){
-  return list.reduce((t,a)=>({att:t.att+a.att,qt:t.qt+a.qt,mem:t.mem+a.mem,
-    fam:t.fam+a.fam,tr:t.tr+a.tr,tal:t.tal+a.tal}),{att:0,qt:0,mem:0,fam:0,tr:0,tal:0});
-}
-function repHint(){
-  return `<div class="hint" style="padding:0 4px 4px">숫자는 선택한 기간의 <b>합계</b>입니다. `+
-    `출석·암송·가정(가정예배)·필사는 실천한 주(회), QT는 실천한 날의 총합, 달란트는 항목 배점 합계입니다.</div>`;
-}
+function repHint(){ return `<div class="hint" style="padding:0 4px 4px">숫자는 선택한 기간의 <b>합계</b>입니다. 출석·암송·가정(가정예배)·필사는 실천한 주(회), QT는 실천한 날의 총합, 달란트는 항목 배점 합계입니다.</div>`; }
 function renderReport(){
   const weeks=weeksInRange();
   const info=document.getElementById("repRangeInfo"); if(info) info.textContent=rangeLabel();
-
-  // 요약 카드 (전체 기준)
   let tAtt=0,tWeeks=0,tTal=0,tQt=0,tQtCnt=0;
-  state.students.forEach(stu=>{ const a=aggStudent(stu,weeks);
-    tAtt+=a.att; tWeeks+=a.rec; tTal+=a.tal; tQt+=a.qt; tQtCnt+=a.rec; });
+  state.students.forEach(stu=>{ const a=aggStudent(stu,weeks); tAtt+=a.att; tWeeks+=a.rec; tTal+=a.tal; tQt+=a.qt; tQtCnt+=a.rec; });
   const attRate=tWeeks?Math.round(tAtt/tWeeks*100):0;
   const qtAvg=tQtCnt?(tQt/tQtCnt).toFixed(1):"0";
   document.getElementById("statCards").innerHTML=`
@@ -844,20 +785,15 @@ function renderReport(){
     <div class="stat"><div class="v">${attRate}%</div><div class="l">평균 출석률</div></div>
     <div class="stat"><div class="v">${qtAvg}</div><div class="l">QT 평균(주당 일수)</div></div>
     <div class="stat"><div class="v gold">${tTal}</div><div class="l">총 달란트</div></div>`;
-
   fillClassFilter();
   const body=document.getElementById("repBody");
   if(state.students.length===0){ body.innerHTML=`<div class="card empty">데이터가 없습니다.</div>`; return; }
-
   const th=`<th class="name">이름</th><th>출석</th><th>QT</th><th>암송</th><th>가정</th><th>필사</th><th>🪙달란트</th>`;
-  const row=(a)=>`<tr><td class="name">${esc(a.stu.name)}</td>
-    <td>${a.att}</td><td>${a.qt}</td><td>${a.mem}</td><td>${a.fam}</td><td>${a.tr}</td><td class="tgold">${a.tal}</td></tr>`;
-  const totrow=(label,t)=>`<tr class="totrow"><td class="name">${label}</td>
-    <td>${t.att}</td><td>${t.qt}</td><td>${t.mem}</td><td>${t.fam}</td><td>${t.tr}</td><td>${t.tal}</td></tr>`;
-
+  const row=(a)=>`<tr><td class="name">${esc(a.stu.name)}</td><td>${a.att}</td><td>${a.qt}</td><td>${a.mem}</td><td>${a.fam}</td><td>${a.tr}</td><td class="tgold">${a.tal}</td></tr>`;
+  const totrow=(label,t)=>`<tr class="totrow"><td class="name">${label}</td><td>${t.att}</td><td>${t.qt}</td><td>${t.mem}</td><td>${t.fam}</td><td>${t.tr}</td><td>${t.tal}</td></tr>`;
   if(repView==="class"){
     let html="";
-    groupByClass().forEach(({cls, students})=>{
+    groupByClass().forEach(({cls,students})=>{
       if(!students.length) return;
       if(repClassFilter!=="__all" && repClassFilter!==cls) return;
       const aggs=applyFilterSort(students.map(s=>aggStudent(s,weeks)));
@@ -867,17 +803,14 @@ function renderReport(){
         <div class="classhdr" style="margin-top:0">${esc(cls)} <span class="tag">${aggs.length}명</span>
           <span class="clstal" style="margin-left:auto">🪙 ${tot.tal}</span></div>
         <div class="tblwrap"><table class="rept"><thead><tr>${th}</tr></thead><tbody>
-          ${aggs.map(row).join("")}
-          ${totrow("반 합계",tot)}
+          ${aggs.map(row).join("")}${totrow("반 합계",tot)}
         </tbody></table></div></div>`;
     });
     body.innerHTML=(html||`<div class="card empty">조건에 맞는 학생이 없습니다.</div>`)+repHint();
   }else{
     const aggs=applyFilterSort(state.students.map(s=>aggStudent(s,weeks)));
     const tot=sumAgg(aggs);
-    const rows=aggs.length? aggs.map(a=>`<tr><td class="name">${esc(a.stu.name)}</td><td>${esc(a.stu.className)}</td>
-          <td>${a.att}</td><td>${a.qt}</td><td>${a.mem}</td><td>${a.fam}</td><td>${a.tr}</td><td class="tgold">${a.tal}</td></tr>`).join("")
-      : `<tr><td class="empty" colspan="8">조건에 맞는 학생이 없습니다.</td></tr>`;
+    const rows=aggs.length? aggs.map(a=>`<tr><td class="name">${esc(a.stu.name)}</td><td>${esc(a.stu.className)}</td><td>${a.att}</td><td>${a.qt}</td><td>${a.mem}</td><td>${a.fam}</td><td>${a.tr}</td><td class="tgold">${a.tal}</td></tr>`).join("") : `<tr><td class="empty" colspan="8">조건에 맞는 학생이 없습니다.</td></tr>`;
     body.innerHTML=`<div class="card">
       <div class="classhdr" style="margin-top:0">전체 학생 <span class="tag">${aggs.length}명</span>
         <span class="clstal" style="margin-left:auto">🪙 ${tot.tal}</span></div>
@@ -887,150 +820,123 @@ function renderReport(){
       </tbody></table></div></div>`+repHint();
   }
 }
-/* 리포트 컨트롤 */
 document.getElementById("repRange").onchange=()=>{
   const val=document.getElementById("repRange").value;
-  document.getElementById("customRange").style.display = val==="custom"?"":"none";
-  if(val==="custom"){
-    const st=document.getElementById("repStart"), en=document.getElementById("repEnd");
-    const all=allRecordedWeeks();
-    if(!st.value) st.value = all.length? all[0] : ymd(curWeek);
-    if(!en.value) en.value = ymd(new Date());
-  }
+  document.getElementById("customRange").style.display=val==="custom"?"":"none";
+  if(val==="custom"){ const st=document.getElementById("repStart"), en=document.getElementById("repEnd"); const all=allRecordedWeeks();
+    if(!st.value) st.value=all.length?all[0]:ymd(curWeek); if(!en.value) en.value=ymd(new Date()); }
   renderReport();
 };
 document.getElementById("repStart").onchange=renderReport;
 document.getElementById("repEnd").onchange=renderReport;
-document.querySelectorAll(".segbtn").forEach(b=>{
-  b.onclick=()=>{
-    document.querySelectorAll(".segbtn").forEach(x=>x.classList.remove("active"));
-    b.classList.add("active"); repView=b.dataset.view; renderReport();
-  };
-});
+document.querySelectorAll(".segbtn").forEach(b=>{ b.onclick=()=>{ document.querySelectorAll(".segbtn").forEach(x=>x.classList.remove("active")); b.classList.add("active"); repView=b.dataset.view; renderReport(); }; });
 document.getElementById("repClassFilter").onchange=(e)=>{ repClassFilter=e.target.value; renderReport(); };
 document.getElementById("repNameFilter").oninput=(e)=>{ repNameFilter=e.target.value; renderReport(); };
-document.getElementById("repSort").onchange=(e)=>{
-  repSort=e.target.value;
-  repSortDir = (repSort==="tal") ? "desc" : "asc";  // 이름·반은 오름차순, 달란트는 내림차순 기본
-  syncDirBtn(); renderReport();
-};
-document.getElementById("repSortDir").onclick=()=>{
-  repSortDir = repSortDir==="asc" ? "desc" : "asc";
-  syncDirBtn(); renderReport();
-};
-function syncDirBtn(){
-  const b=document.getElementById("repSortDir");
-  if(b) b.textContent = repSortDir==="asc" ? "오름차순 ▲" : "내림차순 ▼";
-}
+document.getElementById("repSort").onchange=(e)=>{ repSort=e.target.value; repSortDir=(repSort==="tal")?"desc":"asc"; syncDirBtn(); renderReport(); };
+document.getElementById("repSortDir").onclick=()=>{ repSortDir=repSortDir==="asc"?"desc":"asc"; syncDirBtn(); renderReport(); };
+function syncDirBtn(){ const b=document.getElementById("repSortDir"); if(b) b.textContent=repSortDir==="asc"?"오름차순 ▲":"내림차순 ▼"; }
 
-/* ---------- 엑셀 내보내기 ---------- */
-document.getElementById("exportBtn").onclick=()=>{
-  const weeks=weeksInRange();
-  const wb=XLSX.utils.book_new();
-
-  // 시트1: 요약
+/* ---------- 엑셀 내보내기 (현재 부서) ---------- */
+function deptWorkbook(dept){
+  const st=root.depts[dept]; const tal=st.talents;
+  const weeksSet=new Set(); Object.values(st.records).forEach(byWk=>Object.keys(byWk).forEach(w=>weeksSet.add(w)));
+  const weeks=[...weeksSet].sort();
   const sum=[["이름","반","출석","기록주수","출석률(%)","QT평균","성경암송","가정예배","성경필사","달란트"]];
-  state.students.forEach(stu=>{
-    let att=0,rec=0,tal=0,qt=0,mem=0,fam=0,tr=0;
-    weeks.forEach(wk=>{
-      const r=state.records[stu.id] && state.records[stu.id][wk];
-      if(!r) return; rec++;
-      if(r.attendance)att++; if(r.memorize)mem++; if(r.family)fam++; if(r.transcribe)tr++;
-      qt+=r.qt||0; tal+=calcTalent(r);
-    });
-    sum.push([stu.name, stu.className, att, rec, rec?Math.round(att/rec*100):0,
-      rec?+(qt/rec).toFixed(1):0, mem, fam, tr, tal]);
-  });
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sum), "요약");
-
-  // 시트2: 주별 상세
+  st.students.forEach(stu=>{ let att=0,rec=0,t=0,qt=0,mem=0,fam=0,tr=0;
+    weeks.forEach(wk=>{ const r=st.records[stu.id]&&st.records[stu.id][wk]; if(!r)return; rec++; if(r.attendance)att++; if(r.memorize)mem++; if(r.family)fam++; if(r.transcribe)tr++; qt+=r.qt||0; t+=talentOf(r,tal); });
+    sum.push([stu.name,stu.className,att,rec,rec?Math.round(att/rec*100):0,rec?+(qt/rec).toFixed(1):0,mem,fam,tr,t]); });
   const det=[["주간(주일)","반","이름","출석","QT(0-7)","성경암송","가정예배","성경필사","달란트","메모/기도제목"]];
-  weeks.forEach(wk=>{
-    state.students.forEach(stu=>{
-      const r=state.records[stu.id] && state.records[stu.id][wk];
-      if(!r) return;
-      det.push([wk, stu.className, stu.name, r.attendance?"O":"", r.qt||0,
-        r.memorize?"O":"", r.family?"O":"", r.transcribe?"O":"", calcTalent(r), r.memo||""]);
-    });
-  });
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(det), "주별상세");
-
-  // 시트3: 연락처
+  weeks.forEach(wk=>{ st.students.forEach(stu=>{ const r=st.records[stu.id]&&st.records[stu.id][wk]; if(!r)return;
+    det.push([wk,stu.className,stu.name,r.attendance?"O":"",r.qt||0,r.memorize?"O":"",r.family?"O":"",r.transcribe?"O":"",talentOf(r,tal),r.memo||""]); }); });
   const con=[["반","이름","학생 연락처","학부모 성함","학부모 연락처"]];
-  state.students.forEach(stu=>{
-    con.push([stu.className, stu.name, stu.phone||"", stu.parent||"", stu.parentPhone||""]);
-  });
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(con), "연락처");
-
-  const today=new Date();
-  const fn=`초등부_관리_${today.getFullYear()}${String(today.getMonth()+1).padStart(2,"0")}${String(today.getDate()).padStart(2,"0")}.xlsx`;
-  XLSX.writeFile(wb, fn);
+  st.students.forEach(stu=>{ con.push([stu.className,stu.name,stu.phone||"",stu.parent||"",stu.parentPhone||""]); });
+  return {sum,det,con};
+}
+document.getElementById("exportBtn").onclick=()=>{
+  const wb=XLSX.utils.book_new(); const w=deptWorkbook(currentDept);
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(w.sum), "요약");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(w.det), "주별상세");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(w.con), "연락처");
+  const t=new Date();
+  XLSX.writeFile(wb, `${currentDept}_출석부_${t.getFullYear()}${String(t.getMonth()+1).padStart(2,"0")}${String(t.getDate()).padStart(2,"0")}.xlsx`);
 };
 
-/* ---------- 백업/복원/초기화 ---------- */
+/* ================= 관리자 (전체 부서) ================= */
+function deptWeekStats(dept, wk){
+  const st=root.depts[dept]; let present=0, tal=0, allTal=0;
+  st.students.forEach(stu=>{ const r=st.records[stu.id]&&st.records[stu.id][wk]; if(r){ if(r.attendance)present++; tal+=talentOf(r,st.talents); } });
+  Object.keys(st.records).forEach(sid=>{ Object.values(st.records[sid]).forEach(r=>{ allTal+=talentOf(r,st.talents); }); });
+  return {students:st.students.length, classes:st.classes.length, present, weekTal:tal, allTal};
+}
+function renderAdmin(){
+  const wk=weekKey(curWeek);
+  document.getElementById("adminWeekInfo").textContent=`이번 주: ${fmtWeek(curWeek)} (${fmtRange(curWeek)})`;
+  let tStu=0,tPresent=0,tWeekTal=0,tAllTal=0;
+  const rows=DEPTS.map(d=>{ const s=deptWeekStats(d,wk); tStu+=s.students; tPresent+=s.present; tWeekTal+=s.weekTal; tAllTal+=s.allTal; return {d,...s}; });
+  document.getElementById("adminCards").innerHTML=`
+    <div class="stat"><div class="v">${DEPTS.length}</div><div class="l">부서</div></div>
+    <div class="stat"><div class="v">${tStu}</div><div class="l">전체 학생</div></div>
+    <div class="stat"><div class="v">${tPresent}</div><div class="l">이번 주 출석</div></div>
+    <div class="stat"><div class="v gold">${tAllTal}</div><div class="l">총 달란트(전체기간)</div></div>`;
+  let html=`<thead><tr><th class="name">부서</th><th>학생</th><th>반</th><th>이번주출석</th><th>이번주달란트</th><th>총달란트</th><th></th></tr></thead><tbody>`;
+  rows.forEach(r=>{
+    html+=`<tr><td class="name">${DEPT_ICON[r.d]||""} ${esc(r.d)}</td><td>${r.students}</td><td>${r.classes}</td>
+      <td>${r.present}/${r.students}</td><td>${r.weekTal}</td><td class="tgold">${r.allTal}</td>
+      <td><button class="btn ghost sm" data-open="${esc(r.d)}">열기</button></td></tr>`;
+  });
+  html+=`<tr class="totrow"><td class="name">전체 합계</td><td>${tStu}</td><td></td><td>${tPresent}</td><td>${tWeekTal}</td><td>${tAllTal}</td><td></td></tr></tbody>`;
+  document.getElementById("adminTable").innerHTML=html;
+  document.querySelectorAll("[data-open]").forEach(b=>{ b.onclick=()=>selectDept(b.dataset.open); });
+}
+document.getElementById("adminExportBtn").onclick=()=>{
+  const wb=XLSX.utils.book_new();
+  const overview=[["부서","학생","반","이번주출석","이번주달란트","총달란트(전체기간)"]];
+  const wk=weekKey(curWeek);
+  DEPTS.forEach(d=>{ const s=deptWeekStats(d,wk); overview.push([d,s.students,s.classes,s.present,s.weekTal,s.allTal]); });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(overview), "부서요약");
+  DEPTS.forEach(d=>{ const w=deptWorkbook(d); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(w.sum), (d+" 요약").substring(0,31)); });
+  const t=new Date();
+  XLSX.writeFile(wb, `우면동교회_전체출석부_${t.getFullYear()}${String(t.getMonth()+1).padStart(2,"0")}${String(t.getDate()).padStart(2,"0")}.xlsx`);
+};
+
+/* ================= 백업/복원/초기화 ================= */
 document.getElementById("backupBtn").onclick=()=>{
-  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="초등부_백업_"+weekKey(new Date())+".json";
-  a.click();
+  const blob=new Blob([JSON.stringify(root,null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="우면동교회_출석부_백업_"+weekKey(new Date())+".json"; a.click();
 };
 document.getElementById("restoreBtn").onclick=()=>document.getElementById("restoreFile").click();
 document.getElementById("restoreFile").onchange=(e)=>{
-  const f=e.target.files[0]; if(!f) return;
-  const fr=new FileReader();
-  fr.onload=()=>{
-    try{
-      const s=JSON.parse(fr.result);
-      if(!s.students||!s.classes) throw 0;
-      state=Object.assign(defaultState(), s); save();
-      alert("복원했습니다."); renderStudents(); renderSettings();
-    }catch(err){ alert("올바른 백업 파일이 아닙니다."); }
-  };
+  const f=e.target.files[0]; if(!f) return; const fr=new FileReader();
+  fr.onload=()=>{ try{ const obj=JSON.parse(fr.result); root=migrateToRoot(obj); if(currentDept) state=root.depts[currentDept]; save();
+    alert("복원했습니다."); renderStudents(); renderSettings(); }catch(err){ alert("올바른 백업 파일이 아닙니다."); } };
   fr.readAsText(f);
 };
 document.getElementById("resetBtn").onclick=()=>{
-  if(confirm("모든 학생과 기록을 삭제합니다. 계속할까요?")){
-    if(confirm("정말 초기화할까요? 되돌릴 수 없습니다.")){
-      state=defaultState(); save(); renderStudents(); renderSettings(); renderCheck();
-      alert("초기화되었습니다.");
+  if(confirm(`'${currentDept}' 부서의 모든 학생과 기록을 삭제합니다. 계속할까요?`)){
+    if(confirm("정말 이 부서를 초기화할까요? 되돌릴 수 없습니다.")){
+      root.depts[currentDept]=blankDept(); state=root.depts[currentDept]; save();
+      renderStudents(); renderSettings(); renderCheck(); alert("초기화되었습니다.");
     }
   }
 };
 
-/* ---------- 유틸 ---------- */
-function esc(s){ return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
-
 /* 모달 배경 클릭 닫기 */
 [stuModal,classModal].forEach(m=>{ m.onclick=(e)=>{ if(e.target===m)m.classList.remove("show"); }; });
 
-/* ================= 구글시트 동기화 ================= */
+/* ================= 구글시트 동기화 (다부서) ================= */
 const SYNC_URL_KEY="cchurch_sync_url";
 const AUTO_KEY="cchurch_sync_auto";
-/* ★ 여기에 Apps Script 웹앱 주소(.../exec)를 넣으면, 링크를 여는 모든 기기가
-   설정 없이 자동으로 같은 구글시트에 연결됩니다. (따옴표 안에 붙여넣기) */
-const DEFAULT_SYNC_URL = "https://script.google.com/macros/s/AKfycbx2Uif4x5_Y5mO2R4RgL33rgJI2hBeZkriS5B-GC5yUVO4jTgEUsAc-mBA8w0XGDggW/exec";
-let syncUrl = localStorage.getItem(SYNC_URL_KEY) || DEFAULT_SYNC_URL;
-let autoSync = localStorage.getItem(AUTO_KEY)!=="0"; // 기본 켜짐
-let syncTimer=null, autoTimer=null, syncing=false;
-
+/* ★ Apps Script 웹앱 주소(.../exec) — 링크를 여는 모든 기기가 자동 연결됩니다. */
+const DEFAULT_SYNC_URL="https://script.google.com/macros/s/AKfycbx2Uif4x5_Y5mO2R4RgL33rgJI2hBeZkriS5B-GC5yUVO4jTgEUsAc-mBA8w0XGDggW/exec";
+let syncUrl=localStorage.getItem(SYNC_URL_KEY)||DEFAULT_SYNC_URL;
+let autoSync=localStorage.getItem(AUTO_KEY)!=="0";
+let syncTimer=null, autoTimer=null, syncing=false, lastSyncText="";
 function hhmm(){ const d=new Date(); return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
 function isTyping(){ const a=document.activeElement; return a && (a.tagName==="TEXTAREA"||a.tagName==="INPUT"); }
-function setSyncStatus(cls, text){
-  const box=document.getElementById("syncStatusBox");
-  if(box){ box.className="sync-status "+cls; box.textContent=text; }
+function setSyncStatus(cls,text){
+  const box=document.getElementById("syncStatusBox"); if(box){ box.className="sync-status "+cls; box.textContent=text; }
   const pill=document.getElementById("syncPill");
-  if(pill){
-    if(!syncUrl){ pill.classList.add("hide"); }
-    else{ pill.classList.remove("hide"); pill.textContent=text.replace(/^✓ /,""); }
-  }
-}
-function rerenderCurrent(){
-  const active=document.querySelector(".tab.active").dataset.tab;
-  if(active==="check") renderCheck();
-  else if(active==="report") renderReport();
-  else if(active==="students") renderStudents();
-  else if(active==="settings"){ renderSettings(); reflectSyncUI(); }
+  if(pill){ if(!syncUrl){ pill.classList.add("hide"); } else { pill.classList.remove("hide"); pill.textContent=text.replace(/^✓ /,""); } }
 }
 function reflectSyncUI(){
   const u=document.getElementById("syncUrl"); if(u && document.activeElement!==u) u.value=syncUrl;
@@ -1038,98 +944,79 @@ function reflectSyncUI(){
   if(!syncUrl) setSyncStatus("off","연동 안 됨 — 이 기기에만 저장됩니다");
   else if(!syncing) setSyncStatus("ok","연동됨"+(lastSyncText?" · "+lastSyncText:""));
 }
-let lastSyncText="";
-
-/* 충돌 방지 병합: 기록은 수정시각(u) 최신 우선, 설정은 cfgUpdatedAt 최신 우선 */
+function rerenderCurrent(){
+  if(currentDept===null){
+    if(document.getElementById("adminScreen").style.display!=="none") renderAdmin();
+    else renderLogin();
+  } else {
+    const active=document.querySelector(".tab.active");
+    activateTab(active?active.dataset.tab:"check");
+  }
+}
+/* 부서별 record-level 병합 */
 function mergeState(local, remote){
   if(!remote || typeof remote!=="object") return local;
-  const del = new Set([...(local.deleted||[]), ...(remote.deleted||[])]);
-  const remoteNewer = (remote.cfgUpdatedAt||0) > (local.cfgUpdatedAt||0);
-  const base = remoteNewer ? remote : local;
-  const out = {
-    classes:(base.classes||[]).slice(),
-    talents:Object.assign({}, DEFAULT_TALENTS, base.talents||{}),
-    cfgUpdatedAt:Math.max(local.cfgUpdatedAt||0, remote.cfgUpdatedAt||0),
-    seq:Math.max(local.seq||1, remote.seq||1),
-    deleted:[...del],
-    students:[], records:{}
-  };
-  // 학생: id 합집합, 삭제된 건 제외, 겹치면 최신 설정 쪽
+  const del=new Set([...(local.deleted||[]),...(remote.deleted||[])]);
+  const remoteNewer=(remote.cfgUpdatedAt||0)>(local.cfgUpdatedAt||0);
+  const base=remoteNewer?remote:local;
+  const out={ classes:(base.classes||[]).slice(), talents:Object.assign({},DEFAULT_TALENTS,base.talents||{}),
+    cfgUpdatedAt:Math.max(local.cfgUpdatedAt||0,remote.cfgUpdatedAt||0), seq:Math.max(local.seq||1,remote.seq||1),
+    deleted:[...del], students:[], records:{} };
   const byId={};
   (local.students||[]).forEach(s=>{ if(!del.has(s.id)) byId[s.id]=s; });
   (remote.students||[]).forEach(s=>{ if(del.has(s.id))return; if(!byId[s.id]||remoteNewer) byId[s.id]=s; });
-  out.students=Object.values(byId);
-  // 기록: sid+주 별 수정시각 비교
-  const sids=new Set([...Object.keys(local.records||{}), ...Object.keys(remote.records||{})]);
-  sids.forEach(sid=>{
-    if(del.has(sid)) return;
+  out.students=Object.keys(byId).map(k=>byId[k]);
+  const sids=new Set([...Object.keys(local.records||{}),...Object.keys(remote.records||{})]);
+  sids.forEach(sid=>{ if(del.has(sid))return;
     const lw=(local.records||{})[sid]||{}, rw=(remote.records||{})[sid]||{};
-    const wks=new Set([...Object.keys(lw), ...Object.keys(rw)]);
-    const m={};
-    wks.forEach(wk=>{ const a=lw[wk], b=rw[wk];
-      m[wk] = (a&&b) ? (((b.u||0)>(a.u||0))?b:a) : (a||b); });
-    if(Object.keys(m).length) out.records[sid]=m;
-  });
+    const wks=new Set([...Object.keys(lw),...Object.keys(rw)]); const m={};
+    wks.forEach(wk=>{ const a=lw[wk], b=rw[wk]; m[wk]=(a&&b)?(((b.u||0)>(a.u||0))?b:a):(a||b); });
+    if(Object.keys(m).length) out.records[sid]=m; });
   return out;
 }
-
+/* root 병합 */
+function mergeRoot(local, remote){
+  if(!remote || typeof remote!=="object") return local;
+  const rd = remote.depts ? remote.depts : migrateToRoot(remote).depts;
+  const out=defaultRoot();
+  DEPTS.forEach(d=>{ out.depts[d]=mergeState(local.depts[d]||blankDept(), rd[d]||blankDept()); });
+  return out;
+}
 async function syncNow(showBusy, force){
   if(!syncUrl || syncing) return;
-  syncing=true;
-  if(showBusy) setSyncStatus("busy","동기화 중…");
+  syncing=true; if(showBusy) setSyncStatus("busy","동기화 중…");
   try{
     let remote=null;
-    const res=await fetch(syncUrl+(syncUrl.includes("?")?"&":"?")+"t="+Date.now(), {method:"GET"});
+    const res=await fetch(syncUrl+(syncUrl.includes("?")?"&":"?")+"t="+Date.now(),{method:"GET"});
     const txt=await res.text();
-    if(txt && txt.trim()){ try{ const j=JSON.parse(txt); remote = (j&&j.state!==undefined)? j.state : j; }catch(e){} }
-    const merged=mergeState(state, remote);
-    const changed = JSON.stringify(merged)!==JSON.stringify(state);
-    state=merged; saveQuiet();
+    if(txt && txt.trim()){ try{ const j=JSON.parse(txt); remote=(j&&j.state!==undefined)?j.state:j; }catch(e){} }
+    const merged=mergeRoot(root, remote);
+    const changed=JSON.stringify(merged)!==JSON.stringify(root);
+    root=merged; if(currentDept) state=root.depts[currentDept]; saveQuiet();
     if(changed && !isTyping()) rerenderCurrent();
-    const remoteEmpty = !remote || ((!remote.students||!remote.students.length) && (!remote.records||!Object.keys(remote.records).length));
-    if(force || dirty || changed || remoteEmpty){
-      await fetch(syncUrl, {method:"POST", body: JSON.stringify({state:state})});
-      dirty=false;
-    }
-    lastSyncText=hhmm()+" 동기화됨";
-    setSyncStatus("ok","✓ "+lastSyncText);
-  }catch(e){
-    setSyncStatus("err","오프라인 — 자동 재시도");
-  }finally{ syncing=false; }
+    const remoteEmpty = !remote || (!remote.depts && !remote.students);
+    if(force || dirty || changed || remoteEmpty){ await fetch(syncUrl,{method:"POST", body:JSON.stringify({state:root})}); dirty=false; }
+    lastSyncText=hhmm()+" 동기화됨"; setSyncStatus("ok","✓ "+lastSyncText);
+  }catch(e){ setSyncStatus("err","오프라인 — 자동 재시도"); }
+  finally{ syncing=false; }
 }
-function scheduleSync(){ if(!syncUrl)return; clearTimeout(syncTimer); syncTimer=setTimeout(()=>syncNow(false), 1500); }
-function setupAuto(){ clearInterval(autoTimer); if(syncUrl && autoSync) autoTimer=setInterval(()=>syncNow(false), 15000); }
-
+function scheduleSync(){ if(!syncUrl)return; clearTimeout(syncTimer); syncTimer=setTimeout(()=>syncNow(false),1500); }
+function setupAuto(){ clearInterval(autoTimer); if(syncUrl && autoSync) autoTimer=setInterval(()=>syncNow(false),15000); }
 document.getElementById("syncConnectBtn").onclick=async()=>{
   const u=document.getElementById("syncUrl").value.trim();
   if(!u){ alert("연동 주소를 입력하세요."); return; }
-  if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(u) &&
-     !confirm("주소 형식이 조금 달라 보입니다. 그래도 연결할까요?")) return;
-  syncUrl=u; localStorage.setItem(SYNC_URL_KEY,u);
-  autoSync=true; localStorage.setItem(AUTO_KEY,"1");
-  reflectSyncUI(); setupAuto();
-  await syncNow(true, true);
+  if(!/^https:\/\/script\.google\.com\/.+\/exec$/.test(u) && !confirm("주소 형식이 조금 달라 보입니다. 그래도 연결할까요?")) return;
+  syncUrl=u; localStorage.setItem(SYNC_URL_KEY,u); autoSync=true; localStorage.setItem(AUTO_KEY,"1");
+  reflectSyncUI(); setupAuto(); await syncNow(true,true);
 };
-document.getElementById("syncNowBtn").onclick=()=>{
-  if(!syncUrl){ alert("먼저 연동 주소를 연결하세요."); return; }
-  syncNow(true);
-};
-document.getElementById("syncOffBtn").onclick=()=>{
-  if(!syncUrl){ return; }
-  if(!confirm("연동을 해제할까요? 이 기기의 데이터는 그대로 유지됩니다.")) return;
-  syncUrl=""; localStorage.removeItem(SYNC_URL_KEY); clearInterval(autoTimer); reflectSyncUI();
-};
-document.getElementById("autoSyncChk").onchange=(e)=>{
-  autoSync=e.target.checked; localStorage.setItem(AUTO_KEY, autoSync?"1":"0"); setupAuto();
-};
+document.getElementById("syncNowBtn").onclick=()=>{ if(!syncUrl){ alert("먼저 연동 주소를 연결하세요."); return; } syncNow(true); };
+document.getElementById("syncOffBtn").onclick=()=>{ if(!syncUrl)return; if(!confirm("연동을 해제할까요? 이 기기의 데이터는 유지됩니다.")) return; syncUrl=""; localStorage.removeItem(SYNC_URL_KEY); clearInterval(autoTimer); reflectSyncUI(); };
+document.getElementById("autoSyncChk").onchange=(e)=>{ autoSync=e.target.checked; localStorage.setItem(AUTO_KEY, autoSync?"1":"0"); setupAuto(); };
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden && syncUrl) syncNow(false); });
-window.addEventListener("beforeunload",()=>{
-  if(syncUrl && dirty){ try{ navigator.sendBeacon(syncUrl, JSON.stringify({state:state})); }catch(e){} }
-});
+window.addEventListener("beforeunload",()=>{ if(syncUrl && dirty){ try{ navigator.sendBeacon(syncUrl, JSON.stringify({state:root})); }catch(e){} } });
 
-/* 초기 렌더 */
-renderCheck();
-reflectSyncUI();
+/* ================= 초기화 ================= */
+renderLogin();
 setupAuto();
 if(syncUrl) syncNow(true);
 </script>
