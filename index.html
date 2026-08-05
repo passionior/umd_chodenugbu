@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>우면동교회 출석부</title>
+<title>우면동교회 교회학교 출석부</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root{
@@ -185,7 +185,7 @@
 <body>
 <header>
   <div class="row between">
-    <h1>⛪ 우면동교회 출석부</h1>
+    <h1>우면동교회 교회학교 출석부</h1>
     <span class="syncpill hide" id="syncPill">동기화</span>
   </div>
   <div class="sub" id="headerSub">부서를 선택하세요</div>
@@ -207,10 +207,10 @@
     <button class="btn grey sm" id="switchDept">← 부서 변경</button>
   </div>
   <div class="tabs">
-    <button class="tab active" data-tab="check">✅ 출석부</button>
-    <button class="tab" data-tab="report">📊 통계</button>
-    <button class="tab" data-tab="students">👥 학생</button>
-    <button class="tab" data-tab="settings">⚙️ 설정</button>
+    <button class="tab active" data-tab="check">출석부</button>
+    <button class="tab" data-tab="report">통계</button>
+    <button class="tab" data-tab="students">학생</button>
+    <button class="tab" data-tab="settings">설정</button>
   </div>
   <main>
     <!-- 출석부 -->
@@ -238,7 +238,7 @@
       </div>
       <div class="card" style="padding:10px 12px">
         <div class="searchbar">
-          <input id="stuSearch" placeholder="🔎 학생 이름 검색 (다른 반 포함)" style="width:100%">
+          <input id="stuSearch" placeholder="학생 이름 검색 (다른 반 포함)" style="width:100%">
           <button class="clearx" id="stuSearchClear" style="display:none">✕</button>
         </div>
       </div>
@@ -265,11 +265,11 @@
             <button class="segbtn active" data-view="class">반별 보기</button>
             <button class="segbtn" data-view="all">전체 보기</button>
           </div>
-          <button class="btn gold sm" id="exportBtn">⬇ 엑셀</button>
+          <button class="btn gold sm" id="exportBtn">엑셀</button>
         </div>
         <div class="repctrl">
           <select id="repClassFilter"></select>
-          <input id="repNameFilter" placeholder="🔎 이름">
+          <input id="repNameFilter" placeholder="이름">
           <select id="repSort">
             <option value="tal">달란트순</option>
             <option value="name">이름순</option>
@@ -300,19 +300,16 @@
     <!-- 설정 -->
     <section id="tab-settings" style="display:none">
       <div class="card">
-        <div class="classhdr" style="margin-top:0">🔗 구글시트 연동</div>
+        <div class="classhdr" style="margin-top:0">구글시트 연동</div>
         <div id="syncStatusBox" class="sync-status off">연동 안 됨</div>
-        <label class="fld" style="margin-top:12px">연동 주소 (Apps Script 웹앱 URL)</label>
-        <input id="syncUrl" type="url" inputmode="url" placeholder="https://script.google.com/macros/s/.../exec" style="width:100%">
         <div class="row" style="margin-top:10px;gap:8px">
-          <button class="btn sm" id="syncConnectBtn">연결</button>
-          <button class="btn ghost sm" id="syncNowBtn">🔄 지금 동기화</button>
-          <button class="btn grey sm" id="syncOffBtn">연동 해제</button>
+          <button class="btn ghost sm" id="syncNowBtn">지금 동기화</button>
         </div>
-        <label class="row" style="margin-top:12px;gap:8px;font-size:15px;font-weight:600;cursor:pointer">
-          <input type="checkbox" id="autoSyncChk" style="width:22px;height:22px;min-height:auto"> 자동 동기화 (15초마다)
-        </label>
-        <div class="hint">모든 선생님이 <b>같은 주소</b>를 쓰면 부서별로 한 구글시트를 함께 편집합니다.</div>
+        <div class="hint">15초마다 자동으로 동기화됩니다. 방금 입력한 내용을 바로 확인하고 싶을 때 위 버튼을 누르세요.</div>
+        <input id="syncUrl" type="url" style="display:none">
+        <button id="syncConnectBtn" style="display:none"></button>
+        <button id="syncOffBtn" style="display:none"></button>
+        <input type="checkbox" id="autoSyncChk" style="display:none">
       </div>
       <div class="card">
         <div class="classhdr" style="margin-top:0">달란트 배점</div>
@@ -322,8 +319,8 @@
       <div class="card">
         <div class="classhdr" style="margin-top:0">데이터 관리</div>
         <div class="row">
-          <button class="btn ghost sm" id="backupBtn">💾 전체 백업 저장</button>
-          <button class="btn ghost sm" id="restoreBtn">📂 백업 불러오기</button>
+          <button class="btn ghost sm" id="backupBtn">전체 백업 저장</button>
+          <button class="btn ghost sm" id="restoreBtn">백업 불러오기</button>
           <button class="btn danger sm" id="resetBtn">이 부서 초기화</button>
         </div>
         <input type="file" id="restoreFile" accept="application/json" style="display:none">
@@ -336,7 +333,7 @@
 <!-- 관리자 화면 -->
 <section id="adminScreen" style="display:none">
   <div class="deptbar">
-    <span class="deptchip">🛡 전체 관리자</span>
+    <span class="deptchip">전체 관리자</span>
     <button class="btn grey sm" id="adminBack">← 부서 선택</button>
   </div>
   <main>
@@ -344,7 +341,7 @@
     <div class="card">
       <div class="row between">
         <div class="classhdr" style="margin-top:0">부서별 현황</div>
-        <button class="btn gold sm" id="adminExportBtn">⬇ 전체 엑셀</button>
+        <button class="btn gold sm" id="adminExportBtn">전체 엑셀</button>
       </div>
       <div class="hint" id="adminWeekInfo" style="margin-top:0;margin-bottom:8px"></div>
       <div class="tblwrap"><table id="adminTable" class="rept"></table></div>
@@ -388,7 +385,6 @@
 const STORE_KEY="cchurch_root_v2";
 const OLD_KEY="cchurch_elem_v1";
 const DEPTS=["유아부","유치부","유년부","초등부","청소년부"];
-const DEPT_ICON={"유아부":"🍼","유치부":"🧸","유년부":"🎈","초등부":"📘","청소년부":"🎒"};
 const ITEMS=[
   {key:"attendance",label:"출석"},{key:"qt",label:"QT"},{key:"memorize",label:"성경암송"},
   {key:"family",label:"가정예배"},{key:"transcribe",label:"성경필사"}
@@ -464,19 +460,19 @@ function renderLogin(){
     const n=root.depts[d].students.length;
     const t=document.createElement("div");
     t.className="depttile";
-    t.innerHTML=`<span class="ic">${DEPT_ICON[d]||"📗"}</span><span class="dn">${esc(d)}</span><span class="dc">학생 ${n}명</span>`;
+    t.innerHTML=`<span class="dn">${esc(d)}</span><span class="dc">학생 ${n}명</span>`;
     t.onclick=()=>selectDept(d);
     box.appendChild(t);
   });
   const admin=document.createElement("div");
   admin.className="depttile admin";
-  admin.innerHTML=`<span class="dn">🛡 전체 관리자</span><span class="dc">모든 부서 현황 보기</span>`;
+  admin.innerHTML=`<span class="dn">전체 관리자</span><span class="dc">모든 부서 현황 보기</span>`;
   admin.onclick=openAdmin;
   box.appendChild(admin);
 }
 function selectDept(d){
   currentDept=d; state=root.depts[d];
-  document.getElementById("deptName").textContent=(DEPT_ICON[d]||"")+" "+d;
+  document.getElementById("deptName").textContent=d;
   document.getElementById("headerSub").textContent=d;
   show("appScreen");
   activateTab("check");
@@ -506,7 +502,7 @@ function stuRowEl(stu, wk, showClass){
   el.innerHTML=`
     <div class="top">
       <span class="nm">${esc(stu.name)}${showClass?` <span class="tag">${esc(stu.className)}</span>`:""}</span>
-      <span class="tal" data-tal="${stu.id}">🪙 ${tal} 달란트</span>
+      <span class="tal" data-tal="${stu.id}">${tal} 달란트</span>
     </div>
     <div class="chips">
       <span class="chip ${rec.attendance?'on':''}" data-k="attendance" data-id="${stu.id}">출석</span>
@@ -527,7 +523,7 @@ function renderCheck(){
   const wk=weekKey(curWeek);
   const list=document.getElementById("checkList"); list.innerHTML="";
   if(state.students.length===0){
-    list.innerHTML=`<div class="card empty"><div class="big">👥</div>등록된 학생이 없습니다.<br>「학생」 탭에서 학생을 추가하세요.</div>`;
+    list.innerHTML=`<div class="card empty">등록된 학생이 없습니다.<br>「학생」 탭에서 학생을 추가하세요.</div>`;
     document.getElementById("wkTotal").textContent="주간 달란트 0"; return;
   }
   let weekTotal=0; state.students.forEach(s=>{ weekTotal+=calcTalent(getRec(s.id,wk)); });
@@ -539,7 +535,7 @@ function renderCheck(){
   if(q){
     const matches=state.students.filter(s=>(s.name||"").toLowerCase().includes(q));
     const wrap=document.createElement("div"); wrap.className="card";
-    wrap.innerHTML=`<div class="classhdr" style="margin-top:0">🔎 검색 결과 <span class="tag">${matches.length}명</span></div><div class="clsbody"></div>`;
+    wrap.innerHTML=`<div class="classhdr" style="margin-top:0">검색 결과 <span class="tag">${matches.length}명</span></div><div class="clsbody"></div>`;
     const body=wrap.querySelector(".clsbody");
     if(!matches.length) body.innerHTML=`<div class="empty" style="padding:14px">일치하는 학생이 없습니다.</div>`;
     matches.forEach(stu=>body.appendChild(stuRowEl(stu,wk,true)));
@@ -555,13 +551,13 @@ function renderCheck(){
     wrap.innerHTML=`<div class="classhdr toggle" style="margin-top:0">
         <span class="caret">${isCol?'▸':'▾'}</span>${esc(cls)}
         <span class="tag">${students.length}명</span>
-        <span class="clstal">🪙 0</span>
+        <span class="clstal">0 달란트</span>
       </div>
       <div class="clsbody"${isCol?' style="display:none"':''}></div>`;
     const body=wrap.querySelector(".clsbody");
     let clsTotal=0;
     students.forEach(stu=>{ clsTotal+=calcTalent(getRec(stu.id,wk)); body.appendChild(stuRowEl(stu,wk,false)); });
-    wrap.querySelector(".clstal").textContent="🪙 "+clsTotal;
+    wrap.querySelector(".clstal").textContent=clsTotal+" 달란트";
     wrap.querySelector(".classhdr.toggle").onclick=()=>{ collapsed[key]=!collapsed[key]; saveCollapsed(); renderCheck(); };
     list.appendChild(wrap);
   });
@@ -586,12 +582,12 @@ function bindCheckEvents(){
 function updateTal(sid){
   const rec=getRec(sid,weekKey(curWeek));
   const el=document.querySelector(`[data-tal="${sid}"]`);
-  if(el) el.textContent="🪙 "+calcTalent(rec)+" 달란트";
+  if(el) el.textContent=calcTalent(rec)+" 달란트";
   let total=0; state.students.forEach(s=>{ total+=calcTalent(getRec(s.id,weekKey(curWeek))); });
   document.getElementById("wkTotal").textContent="주간 달란트 "+total;
   const groups=groupByClass().filter(g=>g.students.length);
   document.querySelectorAll(".clstal").forEach((node,i)=>{
-    const g=groups[i]; if(!g) return; let t=0; g.students.forEach(s=>{ t+=calcTalent(getRec(s.id,weekKey(curWeek))); }); node.textContent="🪙 "+t;
+    const g=groups[i]; if(!g) return; let t=0; g.students.forEach(s=>{ t+=calcTalent(getRec(s.id,weekKey(curWeek))); }); node.textContent=t+" 달란트";
   });
 }
 document.getElementById("prevWk").onclick=()=>{ curWeek.setDate(curWeek.getDate()-7); renderCheck(); };
@@ -613,7 +609,7 @@ function classSummaryCard(){
   let chips=counts.map(x=>`<span class="clschip">${esc(x.c)} <b>${x.n}명</b></span>`).join("");
   if(orphan) chips+=`<span class="clschip warn">미분류 <b>${orphan}명</b></span>`;
   if(!state.classes.length && !orphan) chips=`<span class="nocontact">아직 만든 반이 없습니다. ‘+ 반 추가’로 시작하세요.</span>`;
-  card.innerHTML=`<div class="classhdr" style="margin-top:0">📋 반 현황
+  card.innerHTML=`<div class="classhdr" style="margin-top:0">반 현황
       <span class="tag" style="margin-left:auto">${state.classes.length}개 반 · 학생 ${state.students.length}명</span></div>
     <div class="clschips">${chips}</div>`;
   return card;
@@ -634,13 +630,13 @@ function renderStudents(){
       ${canDel?`<button class="btn grey sm" style="margin-left:auto" data-delcls="${esc(cls)}">반 삭제</button>`:""}</div>${students.length?"":'<div class="hint" style="padding:4px 4px 0">아직 등록된 학생이 없습니다.</div>'}`;
     students.forEach(stu=>{
       const r=document.createElement("div"); r.className="stu";
-      const tel=(num)=> num? `<a class="callbtn" href="tel:${esc(num.replace(/[^0-9+]/g,''))}">📞 ${esc(num)}</a>` : `<span class="nocontact">미입력</span>`;
+      const tel=(num)=> num? `<a class="callbtn" href="tel:${esc(num.replace(/[^0-9+]/g,''))}">${esc(num)}</a>` : `<span class="nocontact">미입력</span>`;
       r.innerHTML=`
         <div class="top">
           <span class="nm">${esc(stu.name)}</span>
           <span class="row" style="gap:6px">
             <button class="btn ghost sm" data-editstu="${stu.id}">수정</button>
-            <button class="del-x" data-delstu="${stu.id}" title="삭제">🗑</button>
+            <button class="del-x" data-delstu="${stu.id}" title="삭제">삭제</button>
           </span>
         </div>
         <div class="contact-lines">
@@ -788,7 +784,7 @@ function renderReport(){
   fillClassFilter();
   const body=document.getElementById("repBody");
   if(state.students.length===0){ body.innerHTML=`<div class="card empty">데이터가 없습니다.</div>`; return; }
-  const th=`<th class="name">이름</th><th>출석</th><th>QT</th><th>암송</th><th>가정</th><th>필사</th><th>🪙달란트</th>`;
+  const th=`<th class="name">이름</th><th>출석</th><th>QT</th><th>암송</th><th>가정</th><th>필사</th><th>달란트</th>`;
   const row=(a)=>`<tr><td class="name">${esc(a.stu.name)}</td><td>${a.att}</td><td>${a.qt}</td><td>${a.mem}</td><td>${a.fam}</td><td>${a.tr}</td><td class="tgold">${a.tal}</td></tr>`;
   const totrow=(label,t)=>`<tr class="totrow"><td class="name">${label}</td><td>${t.att}</td><td>${t.qt}</td><td>${t.mem}</td><td>${t.fam}</td><td>${t.tr}</td><td>${t.tal}</td></tr>`;
   if(repView==="class"){
@@ -801,7 +797,7 @@ function renderReport(){
       const tot=sumAgg(aggs);
       html+=`<div class="card">
         <div class="classhdr" style="margin-top:0">${esc(cls)} <span class="tag">${aggs.length}명</span>
-          <span class="clstal" style="margin-left:auto">🪙 ${tot.tal}</span></div>
+          <span class="clstal" style="margin-left:auto">${tot.tal} 달란트</span></div>
         <div class="tblwrap"><table class="rept"><thead><tr>${th}</tr></thead><tbody>
           ${aggs.map(row).join("")}${totrow("반 합계",tot)}
         </tbody></table></div></div>`;
@@ -813,8 +809,8 @@ function renderReport(){
     const rows=aggs.length? aggs.map(a=>`<tr><td class="name">${esc(a.stu.name)}</td><td>${esc(a.stu.className)}</td><td>${a.att}</td><td>${a.qt}</td><td>${a.mem}</td><td>${a.fam}</td><td>${a.tr}</td><td class="tgold">${a.tal}</td></tr>`).join("") : `<tr><td class="empty" colspan="8">조건에 맞는 학생이 없습니다.</td></tr>`;
     body.innerHTML=`<div class="card">
       <div class="classhdr" style="margin-top:0">전체 학생 <span class="tag">${aggs.length}명</span>
-        <span class="clstal" style="margin-left:auto">🪙 ${tot.tal}</span></div>
-      <div class="tblwrap"><table class="rept"><thead><tr><th class="name">이름</th><th>반</th><th>출석</th><th>QT</th><th>암송</th><th>가정</th><th>필사</th><th>🪙달란트</th></tr></thead><tbody>
+        <span class="clstal" style="margin-left:auto">${tot.tal} 달란트</span></div>
+      <div class="tblwrap"><table class="rept"><thead><tr><th class="name">이름</th><th>반</th><th>출석</th><th>QT</th><th>암송</th><th>가정</th><th>필사</th><th>달란트</th></tr></thead><tbody>
         ${rows}
         <tr class="totrow"><td class="name">전체 합계</td><td></td><td>${tot.att}</td><td>${tot.qt}</td><td>${tot.mem}</td><td>${tot.fam}</td><td>${tot.tr}</td><td>${tot.tal}</td></tr>
       </tbody></table></div></div>`+repHint();
@@ -880,7 +876,7 @@ function renderAdmin(){
     <div class="stat"><div class="v gold">${tAllTal}</div><div class="l">총 달란트(전체기간)</div></div>`;
   let html=`<thead><tr><th class="name">부서</th><th>학생</th><th>반</th><th>이번주출석</th><th>이번주달란트</th><th>총달란트</th><th></th></tr></thead><tbody>`;
   rows.forEach(r=>{
-    html+=`<tr><td class="name">${DEPT_ICON[r.d]||""} ${esc(r.d)}</td><td>${r.students}</td><td>${r.classes}</td>
+    html+=`<tr><td class="name">${esc(r.d)}</td><td>${r.students}</td><td>${r.classes}</td>
       <td>${r.present}/${r.students}</td><td>${r.weekTal}</td><td class="tgold">${r.allTal}</td>
       <td><button class="btn ghost sm" data-open="${esc(r.d)}">열기</button></td></tr>`;
   });
@@ -929,7 +925,7 @@ const AUTO_KEY="cchurch_sync_auto";
 /* ★ Apps Script 웹앱 주소(.../exec) — 링크를 여는 모든 기기가 자동 연결됩니다. */
 const DEFAULT_SYNC_URL="https://script.google.com/macros/s/AKfycbx2Uif4x5_Y5mO2R4RgL33rgJI2hBeZkriS5B-GC5yUVO4jTgEUsAc-mBA8w0XGDggW/exec";
 let syncUrl=localStorage.getItem(SYNC_URL_KEY)||DEFAULT_SYNC_URL;
-let autoSync=localStorage.getItem(AUTO_KEY)!=="0";
+let autoSync=true; localStorage.setItem(AUTO_KEY,"1");
 let syncTimer=null, autoTimer=null, syncing=false, lastSyncText="";
 function hhmm(){ const d=new Date(); return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
 function isTyping(){ const a=document.activeElement; return a && (a.tagName==="TEXTAREA"||a.tagName==="INPUT"); }
