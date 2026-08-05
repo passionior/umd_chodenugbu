@@ -304,8 +304,10 @@
         <div id="syncStatusBox" class="sync-status off">연동 안 됨</div>
         <div class="row" style="margin-top:10px;gap:8px">
           <button class="btn ghost sm" id="syncNowBtn">지금 동기화</button>
+          <button class="btn grey sm" id="syncReloadBtn">서버에서 강제로 다시 받기</button>
         </div>
         <div class="hint">15초마다 자동으로 동기화됩니다. 방금 입력한 내용을 바로 확인하고 싶을 때 위 버튼을 누르세요.</div>
+        <div id="syncDiag" class="hint" style="margin-top:10px;padding:10px;background:#f7f4ed;border-radius:8px;line-height:1.7;font-family:monospace;font-size:12px;white-space:pre-wrap;color:#555"></div>
         <input id="syncUrl" type="url" style="display:none">
         <button id="syncConnectBtn" style="display:none"></button>
         <button id="syncOffBtn" style="display:none"></button>
@@ -979,23 +981,65 @@ function mergeRoot(local, remote){
   DEPTS.forEach(d=>{ out.depts[d]=mergeState(local.depts[d]||blankDept(), rd[d]||blankDept()); });
   return out;
 }
+function updateDiag(remote, txtLen, phase){
+  const d=document.getElementById("syncDiag"); if(!d) return;
+  const wk=weekKey(curWeek);
+  const remoteInfo = remote && remote.depts
+    ? DEPTS.map(dept=>{
+        const st=remote.depts[dept]||{};
+        const recCnt=Object.keys(st.records||{}).reduce((n,sid)=>n+Object.keys(st.records[sid]||{}).length,0);
+        const wkCnt=Object.keys(st.records||{}).filter(sid=>st.records[sid]&&st.records[sid][wk]).length;
+        return `  ${dept}: 반 ${(st.classes||[]).length}개, 학생 ${(st.students||[]).length}명, 총기록 ${recCnt}건, 이번주기록 ${wkCnt}건`;
+      }).join("\n")
+    : "  (서버 응답 비어있음/파싱실패)";
+  const localInfo = state ? `  현재부서(${currentDept}): 반 ${state.classes.length}개, 학생 ${state.students.length}명, 이번주기록 ${Object.keys(state.records||{}).filter(sid=>state.records[sid]&&state.records[sid][wk]).length}건` : "  (부서 미선택)";
+  d.textContent =
+`[${phase}] ${new Date().toLocaleTimeString("ko-KR")}
+URL: ${syncUrl.slice(0,60)}…
+GET 응답: ${txtLen} 글자
+이번주(주일): ${wk}
+서버 데이터:
+${remoteInfo}
+PC 로컬 데이터:
+${localInfo}`;
+}
 async function syncNow(showBusy, force){
   if(!syncUrl || syncing) return;
   syncing=true; if(showBusy) setSyncStatus("busy","동기화 중…");
   try{
-    let remote=null;
+    let remote=null; let txtLen=0;
     const res=await fetch(syncUrl+(syncUrl.includes("?")?"&":"?")+"t="+Date.now(),{method:"GET",cache:"no-store"});
-    const txt=await res.text();
+    const txt=await res.text(); txtLen=txt.length;
     if(txt && txt.trim()){ try{ const j=JSON.parse(txt); remote=(j&&j.state!==undefined)?j.state:j; }catch(e){} }
+    console.log("[sync] GET", txtLen, "chars, remote depts:", remote&&remote.depts?Object.keys(remote.depts):null);
     const merged=mergeRoot(root, remote);
     const changed=JSON.stringify(merged)!==JSON.stringify(root);
     root=merged; if(currentDept) state=root.depts[currentDept]; saveQuiet();
+    updateDiag(remote, txtLen, "동기화후");
     if(changed && !isTyping()) rerenderCurrent();
     const remoteEmpty = !remote || (!remote.depts && !remote.students);
     if(force || dirty || changed || remoteEmpty){ await fetch(syncUrl,{method:"POST", body:JSON.stringify({state:root})}); dirty=false; }
     lastSyncText=hhmm()+" 동기화됨"; setSyncStatus("ok","✓ "+lastSyncText);
-  }catch(e){ setSyncStatus("err","오프라인 — 자동 재시도"); }
+  }catch(e){ console.error("[sync] error:", e); setSyncStatus("err","오프라인 — 자동 재시도"); }
   finally{ syncing=false; }
+}
+/* 서버 데이터로 강제 덮어쓰기 (PC 로컬 데이터 무시) */
+async function forceReloadFromServer(){
+  if(!syncUrl){ alert("연동 주소가 없습니다."); return; }
+  if(!confirm("서버 데이터로 PC의 로컬 내용을 완전히 덮어씁니다. 계속할까요?")) return;
+  setSyncStatus("busy","서버에서 다시 받는 중…");
+  try{
+    const res=await fetch(syncUrl+(syncUrl.includes("?")?"&":"?")+"t="+Date.now(),{method:"GET",cache:"no-store"});
+    const txt=await res.text();
+    let remote=null; if(txt&&txt.trim()){ try{ const j=JSON.parse(txt); remote=(j&&j.state!==undefined)?j.state:j; }catch(e){} }
+    if(!remote){ alert("서버 응답이 비어있습니다. 서버 배포 상태를 확인해주세요."); setSyncStatus("err","서버 응답 없음"); return; }
+    root = migrateToRoot(remote);
+    if(currentDept) state=root.depts[currentDept];
+    saveQuiet();
+    updateDiag(remote, txt.length, "강제받기");
+    rerenderCurrent();
+    lastSyncText=hhmm()+" 강제로 다시 받음"; setSyncStatus("ok","✓ "+lastSyncText);
+  }catch(e){ console.error(e); alert("서버에서 받기 실패: "+e.message); setSyncStatus("err","오류"); }
 }
 function scheduleSync(){ if(!syncUrl)return; clearTimeout(syncTimer); syncTimer=setTimeout(()=>syncNow(false),1500); }
 function setupAuto(){ clearInterval(autoTimer); if(syncUrl && autoSync) autoTimer=setInterval(()=>syncNow(false),15000); }
@@ -1007,6 +1051,7 @@ document.getElementById("syncConnectBtn").onclick=async()=>{
   reflectSyncUI(); setupAuto(); await syncNow(true,true);
 };
 document.getElementById("syncNowBtn").onclick=()=>{ if(!syncUrl){ alert("먼저 연동 주소를 연결하세요."); return; } syncNow(true); };
+document.getElementById("syncReloadBtn").onclick=forceReloadFromServer;
 document.getElementById("syncOffBtn").onclick=()=>{ if(!syncUrl)return; if(!confirm("연동을 해제할까요? 이 기기의 데이터는 유지됩니다.")) return; syncUrl=""; localStorage.removeItem(SYNC_URL_KEY); clearInterval(autoTimer); reflectSyncUI(); };
 document.getElementById("autoSyncChk").onchange=(e)=>{ autoSync=e.target.checked; localStorage.setItem(AUTO_KEY, autoSync?"1":"0"); setupAuto(); };
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden && syncUrl) syncNow(false); });
